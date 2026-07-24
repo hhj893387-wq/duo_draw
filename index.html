@@ -133,7 +133,7 @@ googleBtn.addEventListener('click', async () => {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/dashboard.html'
+      redirectTo: window.location.origin + '/home.html'
     }
   });
 
@@ -215,7 +215,7 @@ googleBtn.addEventListener('click', async () => {
       return;
     }
 
-    showBanner(banner, "Account created! Check your email to confirm 🎉", "success");
+    showBanner(banner, "Account created! Check your email to confirm", "success");
     form.reset();
     strengthBars.forEach(bar => bar.className = 'bar');
   });
