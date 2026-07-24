@@ -404,13 +404,19 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
 }
 .terms a{ color:var(--blue); font-weight:800; }
 
+/* ===========================================================
+   Mobile: hide the brand panel entirely (blue section + slogan)
+   so only the form shows. !important guards against the panel's
+   own inline "style=" background attribute and any specificity
+   fights, which is why it could still render on some phones.
+   =========================================================== */
 @media (max-width: 880px){
   .stage{
     grid-template-columns:1fr;
     min-height:auto;
   }
   .brand-panel{
-    display:none;
+    display:none !important;
   }
   .form-panel{
     padding:32px 20px 40px;
