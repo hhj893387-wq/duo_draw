@@ -214,6 +214,11 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   background:#FFEDEF;
 }
 
+/* Reserve space so typed text never runs under the SHOW/HIDE toggle */
+.input-wrap:has(.toggle-eye) input{
+  padding-right:64px;
+}
+
 .hint{
   font-size:12.5px;
   font-weight:700;
@@ -232,8 +237,16 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   font-weight:800;
   color:var(--blue);
   user-select:none;
-  background:none;
+  background:transparent;
   border:none;
+  padding:4px 4px;
+  line-height:1;
+  min-width:38px;
+  text-align:right;
+}
+
+.input-wrap input:focus ~ .toggle-eye{
+  color:#2E5FBF;
 }
 
 /* ---- chunky game button: flat offset shadow, presses down on click ---- */
@@ -350,27 +363,30 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 0;
-  border: 2px solid #2E2A24;
-  border-radius: 14px;
-  background: #fff;
+  padding: 15px 20px;
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--white);
   font-family: 'Baloo 2', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: #2E2A24;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
   cursor: pointer;
-  transition: transform 0.05s ease, background 0.15s ease;
-  margin-bottom: 4px;
+  box-shadow: 0 var(--shadow-off) 0 var(--ink);
+  transform: translateY(0);
+  transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+  margin-bottom: var(--shadow-off);
 }
 
 .btn-google:hover {
   background: #f7f7f5;
 }
 
-.btn-google:active {
-  transform: translateY(2px);
+.btn-google:active,
+.btn-google.pressed {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 var(--ink);
 }
-
 .terms{
   display:flex;
   align-items:flex-start;
