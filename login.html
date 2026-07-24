@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome back · Zippo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- LEFT: brand / mascot -->
+  <div class="brand-panel" style="background:var(--coral);">
+    <div class="stripe-band">
+      <div class="s1" style="background:var(--blue);"></div>
+      <div class="s2" style="background:var(--yellow);"></div>
+      <div class="s3" style="background:var(--yellow);"></div>
+    </div>
+
+    <div class="brand-content">
+      
+
+      
+
+      <h2>Welcome back,<br/>keep the streak alive.</h2>
+      <p>Ready for today's lesson?</p>
+
+      <div class="streak-row">
+        <div class="streak-dot filled"></div>
+        <div class="streak-dot filled"></div>
+        <div class="streak-dot filled"></div>
+        <div class="streak-dot filled"></div>
+        <div class="streak-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: form -->
+  <div class="form-panel">
+    <div class="card">
+      
+      <h1>Log in and play</h1>
+      <p class="sub">Your XP is waiting for you.</p>
+
+      <div class="banner" id="banner"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="input-wrap">
+            <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+          <div class="hint" id="emailHint"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="password" placeholder="Your secret password" autocomplete="current-password" required />
+            <button type="button" class="toggle-eye" id="togglePw">SHOW</button>
+          </div>
+          <div class="hint" id="pwHint"></div>
+        </div>
+
+        <div style="text-align:right; margin-bottom:20px;">
+          <a href="#" id="forgotLink" style="color:var(--blue); font-weight:800; font-size:13px; text-decoration:none; border-bottom:3px solid var(--yellow);">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">Log in</button>
+      </form>
+
+      <div class="divider">or</div>
+
+      <p class="switch-line">New here? <a href="signup.html">Create an account</a></p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  const form = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
+  const pwInput = document.getElementById('password');
+  const banner = document.getElementById('banner');
+  const loginBtn = document.getElementById('loginBtn');
+  const togglePw = document.getElementById('togglePw');
+  const forgotLink = document.getElementById('forgotLink');
+
+  togglePw.addEventListener('click', () => {
+    const isPw = pwInput.type === 'password';
+    pwInput.type = isPw ? 'text' : 'password';
+    togglePw.textContent = isPw ? 'HIDE' : 'SHOW';
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    banner.className = 'banner';
+
+    const email = emailInput.value.trim();
+    const password = pwInput.value;
+
+    document.getElementById('emailHint').textContent = '';
+    document.getElementById('pwHint').textContent = '';
+    [emailInput, pwInput].forEach(i => i.classList.remove('error'));
+
+    let hasError = false;
+    if (!isValidEmail(email)) {
+      document.getElementById('emailHint').textContent = 'That email doesn\'t look right.';
+      emailInput.classList.add('error');
+      hasError = true;
+    }
+    if (password.length < 1) {
+      document.getElementById('pwHint').textContent = 'Enter your password.';
+      pwInput.classList.add('error');
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setLoading(loginBtn, true, "Log in", "Logging in...");
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    setLoading(loginBtn, false, "Log in", "Logging in...");
+
+    if (error) {
+      showBanner(banner, error.message, "error");
+      return;
+    }
+
+    showBanner(banner, "Welcome back! Redirecting...", "success");
+    // window.location.href = "dashboard.html";
+  });
+
+  forgotLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!isValidEmail(email)) {
+      showBanner(banner, "Enter your email above first, then click Forgot password.", "error");
+      return;
+    }
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+    if (error) {
+      showBanner(banner, error.message, "error");
+    } else {
+      showBanner(banner, "Password reset link sent to your email!", "success");
+    }
+  });
+</script>
+</body>
+</html>
