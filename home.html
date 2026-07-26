@@ -22,6 +22,35 @@
   --lockgray:#D9D3C4;
 }
 *{ box-sizing:border-box; }
+
+.user-badge{
+  position:fixed;
+  top:18px;
+  left:18px;
+  z-index:1000;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  box-shadow:3px 3px 0 var(--ink);
+  padding:6px 16px 6px 6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:'Baloo 2','Nunito',sans-serif;
+  font-weight:800;
+  font-size:14px;
+  color:var(--ink);
+}
+.user-badge .avatar{
+  width:28px; height:28px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:2px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+}
 html,body{ margin:0; padding:0; }
 body{
   font-family:'Baloo 2','Nunito',sans-serif;
@@ -379,6 +408,10 @@ body{
 </style>
 </head>
 <body>
+<div class="user-badge" id="userBadge">
+  <div class="avatar" id="userAvatar">?</div>
+  <span id="userName">Loading...</span>
+</div>
 <div class="page">
 
   <!-- UNIT 1 -->
@@ -528,7 +561,21 @@ body{
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    // no one logged in — bounce back to the login page
+    window.location.href = "login.html";
+    return;
+  }
+  const username = session.user.user_metadata?.username || session.user.user_metadata?.display_name || "Artist";
+  document.getElementById('userName').textContent = username;
+  document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+})();
+
 function closeAllPopups(){
   document.querySelectorAll('.lesson-popup').forEach(function(p){ p.remove(); });
   document.querySelectorAll('.node-wrap.popup-open').forEach(function(w){ w.classList.remove('popup-open'); });
@@ -625,6 +672,9 @@ function drawPathLines(){
 
 window.addEventListener('load', drawPathLines);
 window.addEventListener('resize', drawPathLines);
+
+
+
 </script>
 </body>
 </html>
