@@ -75,6 +75,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
+// Redirect straight to home if a session already exists
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    window.location.href = "home.html";
+  }
+})();
+
 const form = document.getElementById('loginForm');
 const usernameInput = document.getElementById('username');
 const pwInput = document.getElementById('password');
