@@ -1,13 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Page</title>
+<meta charset="UTF-8">
+<title>Sketch Quest — Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFE053;
+  --coral:#FE6474;
+  --blue:#4279DA;
+  --ink:#2E2A24;
+  --cream:#FFFCF5;
+  --white:#FFFFFF;
+  --gray:#8A8378;
+  --line:#2E2A24;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-off:6px;
+  --green:#8FD44C;
+  --lockgray:#D9D3C4;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Baloo 2','Nunito',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+}
+.page{
+  max-width:520px;
+  margin:0 auto;
+  padding:28px 20px 80px;
+}
+
+/* ---- top unit banner ---- */
+.unit-banner{
+  position:relative;
+  background:var(--blue);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:18px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:56px;
+  color:var(--white);
+  overflow:hidden;
+}
+.unit-banner::before{
+  content:'';
+  position:absolute;
+  width:160px; height:160px;
+  background:var(--coral);
+  border-radius:50%;
+  top:-90px; right:-60px;
+  opacity:.9;
+}
+.unit-banner .txt{ position:relative; z-index:1; }
+.unit-banner .eyebrow{
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--yellow);
+  margin-bottom:4px;
+}
+.unit-banner h1{
+  font-family:'Baloo 2',sans-serif;
+  font-size:22px;
+  margin:0;
+  color:var(--white);
+}
+.unit-banner .badge{
+  position:relative;
+  z-index:1;
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  border-radius:50%;
+  width:56px; height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.unit-banner .badge svg{ width:30px; height:30px; }
+
+/* ---- path ---- */
+.path{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+
+/* svg layer that draws the connecting line under all nodes */
+.path-svg{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  z-index:0;
+}
+
+.row{
+  position:relative;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  height:150px;
+  opacity:0;
+  transform:translateY(22px);
+  animation:rowIn .55s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes rowIn{
+  to{ opacity:1; transform:translateY(0); }
+}
+.path .row:nth-of-type(1){ animation-delay:.05s; }
+.path .row:nth-of-type(2){ animation-delay:.16s; }
+.path .row:nth-of-type(3){ animation-delay:.27s; }
+.path .row:nth-of-type(4){ animation-delay:.38s; }
+.path .row:nth-of-type(5){ animation-delay:.49s; }
+.path .row:nth-of-type(6){ animation-delay:.6s; }
+
+.row .node-wrap{ position:relative; z-index:1; }
+.row .node-wrap.popup-open{ z-index:50; }
+.row .node-wrap.start-wrap{ z-index:90; }
+
+/* the real fix: each .row keeps a leftover transform from its entrance
+   animation, which makes every row its own stacking context. That traps
+   any z-index set on a node-wrap *inside* that row - it can never rise
+   above a different row's content. So the escalation has to happen on the
+   .row itself, which is what actually competes with sibling rows. */
+.row.popup-active{ z-index:500; }
+.row.row-start{ z-index:200; }
+
+/* gentle horizontal offsets to create the curve, no overlap */
+.row.pos-0 .node-wrap{ transform:translateX(0); }
+.row.pos-1 .node-wrap{ transform:translateX(64px); }
+.row.pos-2 .node-wrap{ transform:translateX(64px); }
+.row.pos-3 .node-wrap{ transform:translateX(0px); }
+.row.pos-4 .node-wrap{ transform:translateX(-64px); }
+.row.pos-5 .node-wrap{ transform:translateX(-64px); }
+.row.pos-6 .node-wrap{ transform:translateX(0); }
+
+/* ---- lesson node ---- */
+.node{
+  position:relative;
+  width:84px; height:84px;
+  border-radius:50%;
+  border:4px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:default;
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  background:var(--cream);
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) both;
+}
+.node svg{ width:34px; height:34px; }
+@keyframes nodePop{
+  0%{ opacity:0; transform:scale(.3) rotate(-12deg); }
+  55%{ opacity:1; transform:scale(1.14) rotate(5deg); }
+  75%{ transform:scale(.93) rotate(-3deg); }
+  100%{ opacity:1; transform:scale(1) rotate(0deg); }
+}
+/* sync each node's pop with its row's own entrance delay */
+.path .row:nth-of-type(1) .node{ animation-delay:.05s; }
+.path .row:nth-of-type(2) .node{ animation-delay:.16s; }
+.path .row:nth-of-type(3) .node{ animation-delay:.27s; }
+.path .row:nth-of-type(4) .node{ animation-delay:.38s; }
+.path .row:nth-of-type(5) .node{ animation-delay:.49s; }
+.path .row:nth-of-type(6) .node{ animation-delay:.6s; }
+
+.node.done{ background:var(--green); }
+.node.done svg{ stroke:var(--ink); }
+
+/* the current node pops in like every other node, then hands off (no time
+   overlap, so no fighting over the transform property) into a continuous,
+   slightly rotated bob for extra character */
+.node.current{
+  background:var(--coral);
+  width:96px; height:96px;
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) .05s both,
+            currentBob 2.2s ease-in-out .65s infinite;
+}
+.node.current svg{ width:40px; height:40px; stroke:var(--white); }
+@keyframes currentBob{
+  0%,100%{ transform:translateY(0) rotate(0deg) scale(1); }
+  50%{ transform:translateY(-7px) rotate(3deg) scale(1.05); }
+}
+
+.node.locked{
+  background:var(--lockgray);
+  box-shadow:0 var(--shadow-off) 0 #C2BBA9;
+  border-color:#B7AF9C;
+}
+.node.locked svg{ stroke:#A79F8E; }
+
+.node:not(.locked):not(.current){ transition:transform .12s ease; }
+.node:not(.locked):not(.current):hover{ transform:translateY(-3px) scale(1.04); }
+.node:not(.locked):not(.current):active{ transform:translateY(1px) scale(.94); }
+
+.node.locked-shake{ animation:lockedShake .3s ease; }
+@keyframes lockedShake{
+  0%{ transform:scale(1) rotate(0deg); }
+  15%{ transform:scale(.9) rotate(-7deg); }
+  32%{ transform:scale(1.06) rotate(6deg); }
+  50%{ transform:scale(.96) rotate(-4deg); }
+  68%{ transform:scale(1.02) rotate(2deg); }
+  84%{ transform:scale(.99) rotate(-1deg); }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+
+.node.node-punch{ animation:nodePunch .3s ease; }
+@keyframes nodePunch{
+  0%{ transform:scale(1); }
+  35%{ transform:scale(.82); }
+  65%{ transform:scale(1.12); }
+  100%{ transform:scale(1); }
+}
+
+/* floating "start" pill above current node */
+.start-pill{
+  position:absolute;
+  top:-34px;
+  left:50%;
+  z-index:1000;
+  transform:translateX(-50%);
+  background:var(--yellow);
+  color:var(--ink);
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border-radius:999px;
+  border:3px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);
+  white-space:nowrap;
+  opacity:0;
+  animation:pillPop .5s cubic-bezier(.34,1.56,.64,1) .55s forwards,
+            pillPulse 1.8s ease-in-out 1.15s infinite;
+}
+@keyframes pillPop{
+  from{ opacity:0; transform:translateX(-50%) scale(.4); }
+  to{ opacity:1; transform:translateX(-50%) scale(1); }
+}
+@keyframes pillPulse{
+  0%,100%{ transform:translateX(-50%) scale(1); }
+  50%{ transform:translateX(-50%) scale(1.06); }
+}
+
+/* star count under completed nodes */
+.stars{
+  position:absolute;
+  bottom:-14px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:2px;
+}
+.stars svg{ width:12px; height:12px; }
+
+/* chest / bonus node variant */
+.node.chest{
+  background:var(--yellow);
+  border-radius:var(--radius-sm);
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) .49s both,
+            chestWiggle 2.6s ease-in-out 1s infinite;
+}
+.node.chest svg{ width:36px; height:36px; }
+@keyframes chestWiggle{
+  0%,100%{ transform:rotate(0deg); }
+  12%{ transform:rotate(-5deg); }
+  26%{ transform:rotate(4deg); }
+  40%{ transform:rotate(-3deg); }
+  54%{ transform:rotate(2deg); }
+  68%{ transform:rotate(0deg); }
+}
+
+/* second unit banner further down */
+.unit-banner.alt{ background:var(--coral); margin-top:12px; margin-bottom:56px; }
+.unit-banner.alt::before{ background:var(--blue); }
+.unit-banner.alt .eyebrow{ color:var(--yellow); }
+
+/* locked nodes are clickable to preview the lesson */
+.node.locked{ cursor:pointer; }
+
+/* lesson preview popup, shown under a clicked node */
+.lesson-popup{
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  margin-top:14px;
+  width:200px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:5px 5px 0 var(--ink);
+  padding:14px 16px 16px;
+  z-index:30;
+  text-align:center;
+  transform-origin:top center;
+  animation:popupIn .18s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popupIn{
+  0%{ opacity:0; transform:translateX(-50%) translateY(-10px) scale(.4) rotate(-6deg); }
+  60%{ opacity:1; transform:translateX(-50%) translateY(2px) scale(1.07) rotate(2deg); }
+  80%{ transform:translateX(-50%) translateY(-1px) scale(.97) rotate(-1deg); }
+  100%{ transform:translateX(-50%) translateY(0) scale(1) rotate(0deg); }
+}
+.lesson-popup .popup-arrow{
+  position:absolute;
+  top:-11px;
+  left:50%;
+  transform:translateX(-50%) rotate(45deg);
+  width:16px; height:16px;
+  background:var(--white);
+  border-left:3px solid var(--ink);
+  border-top:3px solid var(--ink);
+}
+.lesson-popup .popup-title{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  margin:0 0 2px;
+}
+.lesson-popup .popup-sub{
+  font-size:12px;
+  font-weight:700;
+  color:var(--gray);
+  margin:0 0 12px;
+}
+.lesson-popup .popup-start{
+  width:100%;
+  padding:10px 14px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  color:var(--white);
+  background:var(--coral);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:0 4px 0 var(--ink);
+  cursor:pointer;
+  transform:translateY(0);
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.lesson-popup .popup-start svg{
+  width:16px; height:16px;
+  flex-shrink:0;
+}
+.lesson-popup .popup-start:hover:not(:disabled){ background:#FF7A8B; }
+.lesson-popup .popup-start:active{
+  transform:translateY(4px);
+  box-shadow:0 0 0 var(--ink);
+}
+.lesson-popup .popup-start:disabled{
+  background:var(--lockgray);
+  color:var(--gray);
+  cursor:not-allowed;
+  box-shadow:0 4px 0 #C2BBA9;
+}
+.lesson-popup .popup-start:disabled svg{ stroke:var(--gray); }
+.lesson-popup .popup-start:disabled:active{
+  transform:translateY(0);
+  box-shadow:0 4px 0 #C2BBA9;
+}
+</style>
 </head>
 <body>
+<div class="page">
 
-    <h1>Hello, World!</h1>
+  <!-- UNIT 1 -->
+  <div class="unit-banner">
+    <div class="txt">
+      <div class="eyebrow">Unit 1</div>
+      <h1>Shapes &amp; lines</h1>
+    </div>
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        
+        <line x1="12" y1="5" x2="12" y2="1.6"></line>
+      </svg>
+    </div>
+  </div>
 
+  <div class="path">
+    <svg class="path-svg"></svg>
+
+    <!-- Lesson 1 - current / only unlocked lesson -->
+    <div class="row pos-0 row-start">
+      <div class="node-wrap start-wrap">
+        <div class="start-pill">Start</div>
+        <div class="node current" data-href="lesson1.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--white)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20l-1.5-1.5C6 14.5 3 12 3 8.6 3 5.9 5.1 4 7.7 4c1.5 0 2.9.7 3.8 1.9L12 6.5l.5-.6c.9-1.2 2.3-1.9 3.8-1.9C18.9 4 21 5.9 21 8.6c0 3.4-3 5.9-7.5 9.9L12 20z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 2 - locked -->
+    <div class="row pos-1">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Basic shapes" data-sub="Lesson 2 of 6" data-href="lesson2.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 3 - locked -->
+    <div class="row pos-2">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Straight lines" data-sub="Lesson 3 of 6" data-href="lesson3.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 4 - locked -->
+    <div class="row pos-3">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Perfect circles" data-sub="Lesson 4 of 6" data-href="lesson4.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bonus chest - locked -->
+    <div class="row pos-4">
+      <div class="node-wrap">
+        <div class="node locked chest" data-title="Bonus challenge" data-sub="Unlocks with lesson 4" data-href="bonus.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="9" width="17" height="11" rx="2"></rect>
+            <path d="M3.5 13h17"></path>
+            <path d="M12 9v11"></path>
+            <path d="M8 9c-1.2-2.2-.4-5 1.7-6 1.3 1.6 1.9 3.7 2.3 6"></path>
+            <path d="M16 9c1.2-2.2.4-5-1.7-6-1.3 1.6-1.9 3.7-2.3 6"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 5 - locked -->
+    <div class="row pos-5">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Proportions" data-sub="Lesson 5 of 6" data-href="lesson5.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"></path>
+            <path d="M4 4l16 16"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- UNIT 2 -->
+  <div class="unit-banner alt">
+    <div class="txt">
+      <div class="eyebrow">Unit 2</div>
+      <h1>Shading &amp; light</h1>
+    </div>
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="path">
+    <svg class="path-svg"></svg>
+
+    <div class="row pos-0 row-start">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Volume basics" data-sub="Lesson 1 of 3" data-href="lesson6.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pos-1">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Light &amp; shadow" data-sub="Lesson 2 of 3" data-href="lesson7.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"></path>
+            <path d="M2 2l7.5 7.5"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pos-2">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Ambient occlusion" data-sub="Lesson 3 of 3" data-href="lesson8.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a9 9 0 1 0 9 9c0-1-1-1.5-2-1a4 4 0 0 1-6-5c.5-1 0-2-1-2z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function closeAllPopups(){
+  document.querySelectorAll('.lesson-popup').forEach(function(p){ p.remove(); });
+  document.querySelectorAll('.node-wrap.popup-open').forEach(function(w){ w.classList.remove('popup-open'); });
+  document.querySelectorAll('.row.popup-active').forEach(function(r){ r.classList.remove('popup-active'); });
+}
+
+document.querySelectorAll('.node.locked').forEach(function(node){
+  node.addEventListener('click', function(e){
+    e.stopPropagation();
+    var wrap = node.parentElement;
+    var alreadyOpen = wrap.querySelector('.lesson-popup');
+    closeAllPopups();
+
+    node.classList.remove('locked-shake');
+    void node.offsetWidth; /* restart the shake animation on every click */
+    node.classList.add('locked-shake');
+
+    if(alreadyOpen) return;
+
+    wrap.classList.add('popup-open');
+    var row = wrap.closest('.row');
+    if(row){ row.classList.add('popup-active'); }
+
+    var popup = document.createElement('div');
+    popup.className = 'lesson-popup';
+    popup.innerHTML =
+      '<div class="popup-arrow"></div>' +
+      '<p class="popup-title">' + (node.dataset.title || 'Lesson') + '</p>' +
+      '<p class="popup-sub">' + (node.dataset.sub || '') + '</p>' +
+      '<button type="button" class="popup-start" disabled>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+          '<rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>' +
+          '<path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>' +
+        '</svg> Locked</button>';
+    wrap.appendChild(popup);
+    /* locked lessons are preview-only: no href is wired up here on purpose,
+       so the button can't be used to jump ahead to a lesson that hasn't
+       been unlocked yet */
+  });
+});
+
+/* unlocked / current / done nodes go straight to their lesson */
+document.querySelectorAll('.node:not(.locked)').forEach(function(node){
+  if(!node.dataset.href) return;
+  node.addEventListener('click', function(e){
+    e.stopPropagation();
+    node.classList.add('node-punch');
+    window.location.href = node.dataset.href;
+  });
+});
+
+document.addEventListener('click', closeAllPopups);
+
+/* ---- draw connecting line between each lesson node in a path ---- */
+function drawPathLines(){
+  document.querySelectorAll('.path').forEach(function(pathEl){
+    var svg = pathEl.querySelector('.path-svg');
+    if(!svg) return;
+    var rect = pathEl.getBoundingClientRect();
+
+    svg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+    svg.innerHTML = '';
+
+    var wraps = pathEl.querySelectorAll('.node-wrap');
+    var points = [];
+    wraps.forEach(function(w){
+      var r = w.getBoundingClientRect();
+      var node = w.querySelector('.node');
+      points.push({
+        x: r.left + r.width / 2 - rect.left,
+        y: r.top + r.height / 2 - rect.top,
+        locked: node ? node.classList.contains('locked') : true
+      });
+    });
+
+    for(var i = 0; i < points.length - 1; i++){
+      var p1 = points[i];
+      var p2 = points[i + 1];
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', p1.x);
+      line.setAttribute('y1', p1.y);
+      line.setAttribute('x2', p2.x);
+      line.setAttribute('y2', p2.y);
+      line.setAttribute('stroke-width', '6');
+      line.setAttribute('stroke-linecap', 'round');
+      /* static dashed line on every segment - same treatment throughout,
+         no draw-in transition, so there's nothing to glitch mid-render */
+      line.setAttribute('stroke-dasharray', '2 16');
+      line.setAttribute('stroke', p1.locked ? '#C2BBA9' : 'var(--ink)');
+      svg.appendChild(line);
+    }
+  });
+}
+
+window.addEventListener('load', drawPathLines);
+window.addEventListener('resize', drawPathLines);
+</script>
 </body>
 </html>
