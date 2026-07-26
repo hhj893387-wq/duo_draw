@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sketch Quest — Lesson 1: Straight Lines</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFE053;
+  --coral:#FE6474;
+  --blue:#4279DA;
+  --ink:#2E2A24;
+  --cream:#FFFCF5;
+  --white:#FFFFFF;
+  --gray:#8A8378;
+  --green:#8FD44C;
+  --lockgray:#D9D3C4;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-off:6px;
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Baloo 2','Nunito',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3{ font-family:'Baloo 2',sans-serif; margin:0; }
+p,span,button{ font-family:'Nunito',sans-serif; }
+
+.page{
+  max-width:480px;
+  margin:0 auto;
+  padding:18px 18px 40px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:22px;
+}
+.exit-btn{
+  width:40px; height:40px;
+  border-radius:50%;
+  border:3px solid var(--ink);
+  background:var(--white);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  box-shadow:3px 3px 0 var(--ink);
+  transition:transform .1s ease, box-shadow .1s ease;
+}
+.exit-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+.exit-btn svg{ width:18px; height:18px; }
+
+.progress-track{
+  flex:1;
+  height:18px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  padding:2px;
+  display:flex;
+  gap:4px;
+}
+.progress-seg{
+  flex:1;
+  border-radius:999px;
+  background:var(--lockgray);
+  transition:background .35s ease;
+}
+.progress-seg.filled{ background:var(--green); }
+.progress-seg.active{ background:var(--coral); }
+
+.round-label{
+  text-align:center;
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--blue);
+  margin-bottom:6px;
+}
+.round-title{
+  text-align:center;
+  font-size:24px;
+  font-weight:800;
+  margin-bottom:18px;
+}
+
+/* ---------- canvas card ---------- */
+.canvas-card{
+  position:relative;
+  background:var(--white);
+  border:4px solid var(--ink);
+  border-radius:var(--radius-lg);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:16px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.canvas-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  background:
+    linear-gradient(#F1ECDD 1px, transparent 1px),
+    linear-gradient(90deg, #F1ECDD 1px, transparent 1px);
+  background-size:24px 24px;
+  border:3px dashed #E3DCC9;
+  touch-action:none;
+}
+.canvas-wrap canvas{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  display:block;
+}
+#guideCanvas{ z-index:1; }
+#drawCanvas{ z-index:2; cursor:crosshair; }
+
+.hint-pill{
+  margin-top:14px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--gray);
+  text-align:center;
+}
+
+.controls-row{
+  display:flex;
+  gap:12px;
+  width:100%;
+  margin-top:16px;
+}
+
+/* ---------- chunky buttons (from styles.css pattern) ---------- */
+.btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:15px 18px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:var(--ink);
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  transform:translateY(0);
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease, opacity .15s ease;
+}
+.btn svg{ width:18px; height:18px; flex-shrink:0; }
+.btn:hover:not(:disabled){ background:#FFE87A; }
+.btn:active:not(:disabled),
+.btn.pressed{ transform:translateY(6px); box-shadow:0 0 0 var(--ink); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.btn-outline{ background:var(--white); color:var(--gray); flex:0 0 auto; padding:15px 18px; }
+.btn-outline:hover:not(:disabled){ background:#F5F1E6; }
+
+.btn-primary{ background:var(--green); color:var(--ink); flex:1 1 100%; font-size:19px; padding:17px 18px; }
+.btn-primary:hover:not(:disabled){ background:#A2E066; }
+
+.btn-coral{ background:var(--coral); color:var(--white); }
+.btn-coral:hover:not(:disabled){ background:#FF7A8B; }
+
+.btn-blue{ background:var(--blue); color:var(--white); }
+.btn-blue:hover:not(:disabled){ background:#5A8CE6; }
+
+/* ---------- feedback popup (inline, over canvas card) ---------- */
+.feedback-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(46,42,36,.28);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border-radius:var(--radius-lg);
+  z-index:20;
+  padding:16px;
+}
+.feedback-overlay.show{ display:flex; }
+
+.feedback-card{
+  width:100%;
+  max-width:320px;
+  background:var(--white);
+  border:4px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:6px 6px 0 var(--ink);
+  padding:26px 22px 22px;
+  text-align:center;
+  animation:cardPop .32s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes cardPop{
+  0%{ opacity:0; transform:scale(.55) translateY(14px); }
+  70%{ opacity:1; transform:scale(1.04) translateY(-3px); }
+  100%{ transform:scale(1) translateY(0); }
+}
+
+.feedback-icon{
+  width:76px; height:76px;
+  border-radius:50%;
+  border:4px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 14px;
+  animation:iconPop .5s cubic-bezier(.34,1.76,.64,1) .1s both;
+}
+@keyframes iconPop{
+  0%{ transform:scale(0) rotate(-20deg); }
+  60%{ transform:scale(1.18) rotate(6deg); }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+.feedback-icon svg{ width:36px; height:36px; }
+.feedback-icon.excellent{ background:var(--yellow); }
+.feedback-icon.good{ background:var(--green); }
+.feedback-icon.retry{ background:#FFEDEF; border-color:var(--coral); }
+
+.feedback-title{ font-size:22px; font-weight:800; margin-bottom:4px; }
+.feedback-score{ font-size:14px; font-weight:800; color:var(--gray); margin-bottom:18px; }
+.feedback-score span{ color:var(--ink); }
+
+/* ---------- failure / tips takeover ---------- */
+.failure-overlay{
+  position:absolute;
+  inset:0;
+  background:var(--cream);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border-radius:var(--radius-lg);
+  z-index:25;
+  padding:26px 22px;
+  text-align:center;
+}
+.failure-overlay.show{ display:flex; }
+.failure-icon{
+  width:78px; height:78px;
+  border-radius:50%;
+  background:#FFEDEF;
+  border:4px solid var(--coral);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:14px;
+  animation:wobble .5s ease;
+}
+@keyframes wobble{
+  0%{ transform:rotate(0); }
+  20%{ transform:rotate(-10deg); }
+  40%{ transform:rotate(8deg); }
+  60%{ transform:rotate(-5deg); }
+  80%{ transform:rotate(3deg); }
+  100%{ transform:rotate(0); }
+}
+.failure-icon svg{ width:36px; height:36px; stroke:var(--coral); }
+.failure-overlay h3{ font-size:21px; margin-bottom:6px; }
+.failure-overlay .sub{ font-size:14px; font-weight:700; color:var(--gray); margin-bottom:16px; max-width:280px; }
+.tip-box{
+  width:100%;
+  max-width:300px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  text-align:left;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  margin-bottom:20px;
+}
+.tip-box svg{ width:20px; height:20px; flex-shrink:0; margin-top:1px; }
+.tip-box p{ font-size:13px; font-weight:700; line-height:1.4; margin:0; }
+.tip-box .tip-label{ display:block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--blue); margin-bottom:2px; }
+
+/* ---------- toast for xp/coin pickup ---------- */
+.toast{
+  position:fixed;
+  top:22px;
+  left:50%;
+  transform:translateX(-50%) translateY(-60px);
+  display:flex;
+  gap:10px;
+  background:var(--ink);
+  color:var(--white);
+  font-weight:800;
+  font-size:14px;
+  padding:10px 18px;
+  border-radius:999px;
+  box-shadow:0 6px 0 rgba(0,0,0,.15);
+  z-index:200;
+  opacity:0;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+}
+.toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+.toast .pill{ display:flex; align-items:center; gap:5px; }
+.toast svg{ width:16px; height:16px; }
+.toast .xp svg{ stroke:var(--yellow); }
+.toast .coin svg{ stroke:var(--coral); }
+
+/* ---------- success screen ---------- */
+.success-screen{
+  position:fixed;
+  inset:0;
+  background:var(--cream);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:500;
+  padding:28px;
+  text-align:center;
+  overflow:hidden;
+}
+.success-screen.show{ display:flex; }
+
+.confetti{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.confetti span{
+  position:absolute;
+  top:-40px;
+  width:12px; height:12px;
+  border-radius:3px;
+  opacity:.95;
+  animation:fall linear infinite;
+}
+@keyframes fall{
+  to{ transform:translateY(115vh) rotate(400deg); }
+}
+
+.trophy-badge{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  
+  margin-bottom:20px;
+  animation:trophyPop .6s cubic-bezier(.34,1.76,.64,1) both, trophyBob 2.4s ease-in-out 1s infinite;
+  z-index:2;
+}
+@keyframes trophyPop{
+  0%{ transform:scale(0) rotate(-25deg); opacity:0; }
+  65%{ transform:scale(1.15) rotate(8deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+@keyframes trophyBob{
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  50%{ transform:translateY(-8px) rotate(-3deg); }
+}
+.trophy-badge svg{ width:58px; height:58px; }
+
+.success-screen h1{ font-size:30px; margin-bottom:6px; z-index:2; }
+.success-screen .sub{ font-size:15px; font-weight:700; color:var(--gray); margin-bottom:26px; z-index:2; }
+
+.stats-row{
+  display:flex;
+  gap:12px;
+  margin-bottom:28px;
+  z-index:2;
+}
+.stat-card{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  padding:14px 18px;
+  min-width:96px;
+  box-shadow:4px 4px 0 var(--ink);
+}
+.stat-card svg{ width:26px; height:26px; margin-bottom:6px; }
+.stat-card .num{ font-size:22px; font-weight:800; display:block; }
+.stat-card .lbl{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--gray); }
+
+.streak-line{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  padding:8px 18px 8px 12px;
+  margin-bottom:30px;
+  z-index:2;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.streak-line svg{ width:22px; height:22px; }
+.streak-line span{ font-weight:800; font-size:14px; }
+
+.success-screen .btn-primary{
+  flex:0 0 auto;
+  width:100%;
+  max-width:320px;
+  z-index:2;
+}
+/* ---------- responsive ---------- */
+@media (max-width:420px){
+  .round-title{ font-size:20px; }
+  .stats-row{ gap:8px; }
+  .stat-card{ padding:12px 14px; min-width:84px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="exit-btn" id="exitBtn" aria-label="Exit lesson">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="progress-track" id="progressTrack"></div>
+  </div>
+
+  <div class="round-label" id="roundLabel">Lesson 3 of 6</div>
+  <h2 class="round-title" id="roundTitle">Trace the horizontal line</h2>
+
+  <!-- CANVAS CARD -->
+  <div class="canvas-card">
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="guideCanvas"></canvas>
+      <canvas id="drawCanvas"></canvas>
+
+      <!-- feedback popup -->
+      <div class="feedback-overlay" id="feedbackOverlay">
+        <div class="feedback-card">
+          <div class="feedback-icon" id="feedbackIcon"></div>
+          <div class="feedback-title" id="feedbackTitle">Excellent!</div>
+          <div class="feedback-score">Score: <span id="feedbackScore">96</span>/100</div>
+          <button class="btn btn-blue" id="nextBtn" style="width:100%;">
+            <span id="nextBtnLabel">Continue</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--white)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- failure takeover -->
+      <div class="failure-overlay" id="failureOverlay">
+        <div class="failure-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 15s1.5 2 4 2 4-2 4-2"></path>
+            <path d="M9 9h.01M15 9h.01"></path>
+            <circle cx="12" cy="12" r="9"></circle>
+          </svg>
+        </div>
+        <h3>Almost there!</h3>
+        <p class="sub" id="failureSub">Your line wandered a bit off the guide. Slow down and keep your eyes on the end point.</p>
+        <div class="tip-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6M10 21h4"></path>
+            <path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.6 1 .6 1.6v.1h6v-.1c0-.6.1-1.2.6-1.6A6 6 0 0 0 12 3z"></path>
+          </svg>
+          <p><span class="tip-label">Tip</span><span id="failureTip">Look at where the line ends before you start drawing, not at your pen.</span></p>
+        </div>
+        <button class="btn btn-primary" id="retryBtn" style="max-width:260px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11A8 8 0 1 0 18.5 16"></path>
+            <path d="M20 5v6h-6"></path>
+          </svg>
+          Try Again
+        </button>
+      </div>
+    </div>
+
+    <p class="hint-pill" id="hintPill">Draw over the dashed line with your finger or mouse</p>
+
+    <div class="controls-row">
+      <button class="btn btn-outline" id="clearBtn" aria-label="Clear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gray)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 11A8 8 0 1 0 18.5 16"></path>
+          <path d="M20 5v6h-6"></path>
+        </svg>
+      </button>
+      <button class="btn btn-primary" id="checkBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>
+        Check
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast">
+  <span class="pill xp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path></svg> <span id="toastXp">+10 XP</span></span>
+  <span class="pill coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M9.5 9.3c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.8 2.5-1.8"></path></svg> <span id="toastCoin">+5</span></span>
+</div>
+
+<!-- success screen -->
+<div class="success-screen" id="successScreen">
+  <div class="confetti" id="confetti"></div>
+  <div class="trophy-badge">
+    
+<svg width="121" height="124" viewBox="0 0 121 124" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.52368 15.0854H33.3893V19.4947H12.8122V41.5411L33.3893 50.3596L38.5336 59.1782L7.66795 45.9503L2.52368 19.4947V15.0854Z" fill="black"/>
+<path d="M120.84 15.0854H89.9746V19.4947H110.552V41.5411L89.9746 50.3596L84.8303 59.1782L115.696 45.9503L120.84 19.4947V15.0854Z" fill="black"/>
+<path d="M38.5352 6.26245H89.9778V63.583L79.6893 67.9922H64.2565H48.8237L38.5352 63.583V6.26245Z" fill="black"/>
+<path d="M33.9831 64.6558C32.0491 63.6064 30.8447 61.5825 30.8447 59.3822V8.92786C30.8447 7.44804 32.0444 6.24841 33.5242 6.24841C35.004 6.24841 36.2036 7.44804 36.2036 8.92785V32.4197V58.9168C36.2036 61.3571 37.6816 63.5543 39.9419 64.4742L45.8338 66.8721C46.552 67.1644 47.3201 67.3147 48.0955 67.3147H77.9004C78.6759 67.3147 79.444 67.1644 80.1622 66.8721L86.0541 64.4742C88.3144 63.5543 89.7924 61.3571 89.7924 58.9168V41.1434V8.92785C89.7924 7.44804 90.992 6.24841 92.4718 6.24841C93.9516 6.24841 95.1513 7.44804 95.1513 8.92785V59.3822C95.1513 61.5825 93.9469 63.6064 92.0129 64.6558L80.4133 70.9502C79.5348 71.4269 78.5511 71.6766 77.5516 71.6766H48.4444C47.4449 71.6766 46.4612 71.4269 45.5827 70.9502L33.9831 64.6558Z" fill="black"/>
+<path d="M53.4875 71.6765H63.3251H73.1627V89.4979L83.0003 98.4086H73.1627H53.4875H43.6499L53.4875 89.4979V71.6765Z" fill="black"/>
+<rect x="25.1596" y="1.85535" width="77.164" height="8.81854" rx="4" fill="black"/>
+<path d="M0 13.2301H30.8656V17.6394H10.2885V39.6857L30.8656 48.5043L36.0099 57.3228L5.14427 44.095L0 17.6394V13.2301Z" fill="#E7A615"/>
+<path d="M118.317 13.2301H87.4509V17.6394H108.028V39.6857L87.4509 48.5043L82.3067 57.3228L113.172 44.095L118.317 17.6394V13.2301Z" fill="#E7A615"/>
+<rect x="20.5787" y="114.64" width="82.3083" height="8.81854" fill="black"/>
+<rect x="30.8656" y="96.9988" width="61.7312" height="17.6371" fill="black"/>
+<path d="M34.2096 4.37903H88.7019V62.3564L77.8034 66.8162H61.4557H45.1081L34.2096 62.3564V4.37903Z" fill="url(#paint0_linear_2511_108)"/>
+<path d="M33.8888 63.4553C32.0193 62.387 30.8656 60.3989 30.8656 58.2458V6.97936C30.8656 5.55881 32.0172 4.40723 33.4377 4.40723C34.8583 4.40723 36.0099 5.55881 36.0099 6.97936V30.8628V57.7713C36.0099 60.1715 37.4403 62.3408 39.6464 63.2862L45.1665 65.6519C45.9133 65.972 46.7174 66.137 47.5299 66.137H75.9325C76.745 66.137 77.5491 65.972 78.296 65.6519L83.816 63.2862C86.0222 62.3408 87.4526 60.1715 87.4526 57.7713V39.6814V6.97936C87.4526 5.55881 88.6041 4.40723 90.0247 4.40723C91.4452 4.40723 92.5968 5.55881 92.5968 6.97936V58.2458C92.5968 60.3989 91.4431 62.387 89.5736 63.4553L78.5474 69.7558C77.6409 70.2738 76.6148 70.5463 75.5707 70.5463H47.8918C46.8476 70.5463 45.8216 70.2738 44.915 69.7558L33.8888 63.4553Z" fill="url(#paint1_linear_2511_108)"/>
+<path d="M51.25 70H61.5H71.75V88L82 97H71.75H51.25H41L51.25 88V70Z" fill="url(#paint2_linear_2511_108)"/>
+<rect x="22.6359" width="77.164" height="8.81854" rx="4" fill="#FFCC00"/>
+<defs>
+<linearGradient id="paint0_linear_2511_108" x1="61.4557" y1="4.37903" x2="61.4557" y2="66.8162" gradientUnits="userSpaceOnUse">
+<stop offset="0.668312" stop-color="#FFCC00"/>
+</linearGradient>
+<linearGradient id="paint1_linear_2511_108" x1="61.7312" y1="4.40723" x2="61.7312" y2="70.5463" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCC00"/>
+</linearGradient>
+<linearGradient id="paint2_linear_2511_108" x1="61.5" y1="70" x2="64" y2="119.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCC00"/>
+<stop offset="1" stop-color="#FF8D28"/>
+</linearGradient>
+</defs>
+</svg>
+
+  </div>
+  <h1>Lesson Complete!</h1>
+  <p class="sub">You nailed straight lines from every angle.</p>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path></svg>
+      <span class="num" id="totalXp">0</span>
+      <span class="lbl">XP earned</span>
+    </div>
+    <div class="stat-card">
+     
+<svg width="28" height="30" viewBox="0 0 28 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect y="1.03564" width="28" height="28" rx="14" fill="black"/>
+<rect x="2" y="4.03564" width="23.6577" height="22.3522" rx="11.1761" fill="#FF8D28"/>
+<rect x="2.34235" y="2.68311" width="23.6577" height="22.3522" rx="11.1761" fill="url(#paint0_linear_2499_72)"/>
+<path d="M4.8 6.89472L17.5 3.03644L19 3.53669L20 4.03644L2.69997 11.0366L3.19999 9.53645L3.99996 8.03645L4.8 6.89472Z" fill="white" fill-opacity="0.68"/>
+<path d="M2.61403 12.205L20.9692 4.71196L21.309 4.86581L21.7318 5.17725L2.42564 13.2398L2.52049 12.6828L2.61403 12.205Z" fill="white" fill-opacity="0.68"/>
+<mask id="path-6-outside-1_2499_72" maskUnits="userSpaceOnUse" x="7.80474" y="6.56471" width="12.5539" height="15.6908" fill="black">
+<rect fill="white" x="7.80474" y="6.56471" width="12.5539" height="15.6908"/>
+<path d="M13.5908 15.1468C13.1606 15.0901 12.767 15.0262 12.4101 14.9548C12.0513 14.8744 11.7328 14.7573 11.4545 14.6036C11.1763 14.4499 10.941 14.2495 10.7488 14.0025C10.5639 13.7444 10.4311 13.414 10.3505 13.0114C10.2259 12.3891 10.3136 11.8289 10.6137 11.331C10.912 10.8239 11.4024 10.4211 12.0851 10.1226L11.8625 9.01068C11.9412 8.97589 12.0647 8.92736 12.2331 8.86509C12.4015 8.80282 12.5772 8.75336 12.7602 8.71672C13.1172 8.64526 13.4091 8.65343 13.6361 8.74124C13.8613 8.8199 14.0141 9.06057 14.0948 9.46325L14.1305 9.64171C14.7126 9.60132 15.1949 9.65704 15.5775 9.80889C15.9692 9.9589 16.2036 10.2261 16.2805 10.6105C16.3282 10.8484 16.3145 11.0653 16.2395 11.2612C16.1626 11.4479 16.0583 11.6163 15.9266 11.7664C15.6996 11.6786 15.4076 11.6229 15.0507 11.5991C14.6919 11.5663 14.3112 11.5901 13.9085 11.6708C13.4967 11.7532 13.2066 11.8732 13.0382 12.0306C12.868 12.1789 12.8003 12.34 12.8352 12.5139C12.8626 12.6512 12.945 12.7537 13.0823 12.8214C13.2178 12.8799 13.4118 12.922 13.6644 12.9475L14.4387 13.0352C15.3539 13.1376 16.0834 13.358 16.6271 13.6965C17.1781 14.024 17.5269 14.5538 17.6735 15.286C17.7981 15.9083 17.7076 16.4785 17.4021 16.9966C17.0947 17.5055 16.5767 17.9138 15.8483 18.2214L16.0682 19.3196C15.9895 19.3544 15.8659 19.403 15.6975 19.4652C15.5292 19.5275 15.3534 19.577 15.1704 19.6136C14.8135 19.6851 14.5215 19.6769 14.2946 19.5891C14.0694 19.5104 13.9165 19.2697 13.8359 18.8671L13.8084 18.7298C13.4716 18.7592 13.1577 18.7601 12.8667 18.7327C12.5848 18.7035 12.3303 18.645 12.1033 18.5572C11.8855 18.4675 11.7043 18.3468 11.5596 18.1949C11.415 18.043 11.3207 17.8572 11.2767 17.6376C11.2236 17.3722 11.2565 17.1324 11.3754 16.9182C11.4925 16.6949 11.6325 16.5145 11.7954 16.3772C12.0919 16.5272 12.4379 16.6388 12.8333 16.712C13.2378 16.7833 13.6597 16.7749 14.099 16.687C14.5474 16.5972 14.8494 16.4654 15.005 16.2914C15.1605 16.1175 15.22 15.939 15.1833 15.756C15.1467 15.573 15.046 15.4503 14.8812 15.3881C14.7147 15.3168 14.4895 15.2619 14.2058 15.2235L13.5908 15.1468Z"/>
+</mask>
+<path d="M13.5908 15.1468C13.1606 15.0901 12.767 15.0262 12.4101 14.9548C12.0513 14.8744 11.7328 14.7573 11.4545 14.6036C11.1763 14.4499 10.941 14.2495 10.7488 14.0025C10.5639 13.7444 10.4311 13.414 10.3505 13.0114C10.2259 12.3891 10.3136 11.8289 10.6137 11.331C10.912 10.8239 11.4024 10.4211 12.0851 10.1226L11.8625 9.01068C11.9412 8.97589 12.0647 8.92736 12.2331 8.86509C12.4015 8.80282 12.5772 8.75336 12.7602 8.71672C13.1172 8.64526 13.4091 8.65343 13.6361 8.74124C13.8613 8.8199 14.0141 9.06057 14.0948 9.46325L14.1305 9.64171C14.7126 9.60132 15.1949 9.65704 15.5775 9.80889C15.9692 9.9589 16.2036 10.2261 16.2805 10.6105C16.3282 10.8484 16.3145 11.0653 16.2395 11.2612C16.1626 11.4479 16.0583 11.6163 15.9266 11.7664C15.6996 11.6786 15.4076 11.6229 15.0507 11.5991C14.6919 11.5663 14.3112 11.5901 13.9085 11.6708C13.4967 11.7532 13.2066 11.8732 13.0382 12.0306C12.868 12.1789 12.8003 12.34 12.8352 12.5139C12.8626 12.6512 12.945 12.7537 13.0823 12.8214C13.2178 12.8799 13.4118 12.922 13.6644 12.9475L14.4387 13.0352C15.3539 13.1376 16.0834 13.358 16.6271 13.6965C17.1781 14.024 17.5269 14.5538 17.6735 15.286C17.7981 15.9083 17.7076 16.4785 17.4021 16.9966C17.0947 17.5055 16.5767 17.9138 15.8483 18.2214L16.0682 19.3196C15.9895 19.3544 15.8659 19.403 15.6975 19.4652C15.5292 19.5275 15.3534 19.577 15.1704 19.6136C14.8135 19.6851 14.5215 19.6769 14.2946 19.5891C14.0694 19.5104 13.9165 19.2697 13.8359 18.8671L13.8084 18.7298C13.4716 18.7592 13.1577 18.7601 12.8667 18.7327C12.5848 18.7035 12.3303 18.645 12.1033 18.5572C11.8855 18.4675 11.7043 18.3468 11.5596 18.1949C11.415 18.043 11.3207 17.8572 11.2767 17.6376C11.2236 17.3722 11.2565 17.1324 11.3754 16.9182C11.4925 16.6949 11.6325 16.5145 11.7954 16.3772C12.0919 16.5272 12.4379 16.6388 12.8333 16.712C13.2378 16.7833 13.6597 16.7749 14.099 16.687C14.5474 16.5972 14.8494 16.4654 15.005 16.2914C15.1605 16.1175 15.22 15.939 15.1833 15.756C15.1467 15.573 15.046 15.4503 14.8812 15.3881C14.7147 15.3168 14.4895 15.2619 14.2058 15.2235L13.5908 15.1468Z" fill="white"/>
+<path d="M13.5908 15.1468L13.4602 16.1383L13.4669 16.1391L13.5908 15.1468ZM12.4101 14.9548L12.1913 15.9306L12.2027 15.9332L12.2142 15.9355L12.4101 14.9548ZM11.4545 14.6036L11.938 13.7283V13.7283L11.4545 14.6036ZM10.7488 14.0025L9.93596 14.585L9.94745 14.601L9.95957 14.6166L10.7488 14.0025ZM10.6137 11.331L11.4702 11.8472L11.4757 11.838L10.6137 11.331ZM12.0851 10.1226L12.4857 11.0389L13.2238 10.7161L13.0656 9.9263L12.0851 10.1226ZM11.8625 9.01068L11.4581 8.09608L10.7245 8.42044L10.8819 9.207L11.8625 9.01068ZM12.2331 8.86509L11.8863 7.92717L11.8863 7.92717L12.2331 8.86509ZM13.6361 8.74124L13.2753 9.67389L13.2907 9.67985L13.3063 9.68529L13.6361 8.74124ZM14.1305 9.64171L13.15 9.83803L13.3226 10.7002L14.1997 10.6393L14.1305 9.64171ZM15.5775 9.80889L15.2086 10.7384L15.2199 10.7428L15.5775 9.80889ZM16.2395 11.2612L17.1642 11.6417L17.1689 11.6303L17.1733 11.6188L16.2395 11.2612ZM15.9266 11.7664L15.5658 12.6991L16.2173 12.9511L16.6782 12.4261L15.9266 11.7664ZM15.0507 11.5991L14.9594 12.595L14.9719 12.5961L14.9844 12.5969L15.0507 11.5991ZM13.0382 12.0306L13.6952 12.7846L13.7084 12.773L13.7213 12.761L13.0382 12.0306ZM13.0823 12.8214L12.6401 13.7183L12.6626 13.7293L12.6856 13.7393L13.0823 12.8214ZM13.6644 12.9475L13.777 11.9538L13.7652 11.9526L13.6644 12.9475ZM14.4387 13.0352L14.3262 14.0289L14.3276 14.029L14.4387 13.0352ZM16.6271 13.6965L16.0986 14.5454L16.1073 14.5508L16.1162 14.5561L16.6271 13.6965ZM17.4021 16.9966L18.2581 17.5136L18.2634 17.5046L17.4021 16.9966ZM15.8483 18.2214L15.4592 17.3002L14.7076 17.6177L14.8678 18.4178L15.8483 18.2214ZM16.0682 19.3196L16.4725 20.2342L17.2062 19.9099L17.0487 19.1233L16.0682 19.3196ZM14.2946 19.5891L14.6554 18.6564L14.64 18.6505L14.6244 18.645L14.2946 19.5891ZM13.8084 18.7298L14.7889 18.5335L14.6132 17.6559L13.7216 17.7336L13.8084 18.7298ZM12.8667 18.7327L12.7635 19.7274L12.7729 19.7283L12.8667 18.7327ZM12.1033 18.5572L11.7228 19.4819L11.7326 19.486L11.7425 19.4898L12.1033 18.5572ZM11.5596 18.1949L10.8354 18.8845L10.8354 18.8845L11.5596 18.1949ZM11.3754 16.9182L12.2497 17.4036L12.2555 17.3932L12.261 17.3826L11.3754 16.9182ZM11.7954 16.3772L12.2468 15.4849L11.6566 15.1863L11.1508 15.6127L11.7954 16.3772ZM12.8333 16.712L12.6514 17.6953L12.6597 17.6968L12.8333 16.712ZM15.005 16.2914L14.2596 15.6248L14.2596 15.6248L15.005 16.2914ZM14.8812 15.3881L14.4875 16.3074L14.5076 16.316L14.528 16.3237L14.8812 15.3881ZM14.2058 15.2235L14.3398 14.2325L14.3296 14.2312L14.2058 15.2235ZM13.5908 15.1468L13.7213 14.1554C13.3091 14.1011 12.9377 14.0405 12.606 13.9742L12.4101 14.9548L12.2142 15.9355C12.5964 16.0118 13.0121 16.0792 13.4602 16.1382L13.5908 15.1468ZM12.4101 14.9548L12.6289 13.9791C12.3485 13.9162 12.1215 13.8296 11.938 13.7283L11.4545 14.6036L10.971 15.4789C11.3441 15.685 11.7541 15.8326 12.1913 15.9306L12.4101 14.9548ZM11.4545 14.6036L11.938 13.7283C11.7765 13.639 11.6458 13.5269 11.538 13.3884L10.7488 14.0025L9.95957 14.6166C10.2363 14.9722 10.5761 15.2608 10.971 15.4789L11.4545 14.6036ZM10.7488 14.0025L11.5616 13.42C11.4799 13.3059 11.3916 13.1178 11.331 12.8151L10.3505 13.0114L9.36993 13.2077C9.47057 13.7103 9.64787 14.183 9.93596 14.585L10.7488 14.0025ZM10.3505 13.0114L11.331 12.8151C11.2505 12.413 11.3112 12.111 11.4702 11.8472L10.6137 11.331L9.75722 10.8148C9.31607 11.5468 9.20123 12.3651 9.36993 13.2077L10.3505 13.0114ZM10.6137 11.331L11.4757 11.838C11.6416 11.5558 11.9443 11.2756 12.4857 11.0389L12.0851 10.1226L11.6845 9.20637C10.8605 9.56664 10.1823 10.092 9.75174 10.824L10.6137 11.331ZM12.0851 10.1226L13.0656 9.9263L12.843 8.81436L11.8625 9.01068L10.8819 9.207L11.1046 10.3189L12.0851 10.1226ZM11.8625 9.01068L12.2668 9.92529C12.3156 9.90371 12.4149 9.86405 12.58 9.80301L12.2331 8.86509L11.8863 7.92717C11.7146 7.99067 11.5667 8.04806 11.4581 8.09608L11.8625 9.01068ZM12.2331 8.86509L12.58 9.80301C12.6975 9.75956 12.8227 9.72405 12.9566 9.69726L12.7602 8.71672L12.5639 7.73618C12.3317 7.78267 12.1055 7.84608 11.8863 7.92717L12.2331 8.86509ZM12.7602 8.71672L12.9566 9.69726C13.0784 9.67285 13.1639 9.66732 13.2189 9.66886C13.2731 9.67038 13.287 9.6784 13.2753 9.67389L13.6361 8.74124L13.9969 7.8086C13.5252 7.62611 13.0209 7.64468 12.5639 7.73618L12.7602 8.71672ZM13.6361 8.74124L13.3063 9.68529C13.243 9.66318 13.1886 9.63044 13.1461 9.59456C13.1052 9.55999 13.0836 9.52958 13.0756 9.51696C13.068 9.50505 13.0716 9.50758 13.0808 9.5328C13.0898 9.55779 13.1021 9.59874 13.1142 9.65957L14.0948 9.46325L15.0753 9.26693C14.9763 8.77241 14.7132 8.05827 13.9659 7.7972L13.6361 8.74124ZM14.0948 9.46325L13.1142 9.65957L13.15 9.83803L14.1305 9.64171L15.111 9.44539L15.0753 9.26693L14.0948 9.46325ZM14.1305 9.64171L14.1997 10.6393C14.6906 10.6052 15.0107 10.6598 15.2086 10.7384L15.5775 9.80889L15.9464 8.87942C15.3791 8.65429 14.7345 8.59739 14.0613 8.64411L14.1305 9.64171ZM15.5775 9.80889L15.2199 10.7428C15.2913 10.7701 15.303 10.79 15.2952 10.7812C15.2925 10.778 15.2909 10.7751 15.291 10.7753C15.2913 10.7759 15.2956 10.785 15.3 10.8068L16.2805 10.6105L17.2611 10.4141C17.1113 9.66595 16.6203 9.1374 15.9351 8.87502L15.5775 9.80889ZM16.2805 10.6105L15.3 10.8068C15.3087 10.8502 15.3087 10.8764 15.308 10.8886C15.3073 10.8999 15.3057 10.9034 15.3056 10.9036L16.2395 11.2612L17.1733 11.6188C17.326 11.2201 17.3399 10.8077 17.2611 10.4141L16.2805 10.6105ZM16.2395 11.2612L15.3147 10.8806C15.2794 10.9665 15.2332 11.0404 15.175 11.1068L15.9266 11.7664L16.6782 12.4261C16.8834 12.1922 17.0459 11.9293 17.1642 11.6417L16.2395 11.2612ZM15.9266 11.7664L16.2874 10.8338C15.9331 10.6967 15.5321 10.6289 15.117 10.6013L15.0507 11.5991L14.9844 12.5969C15.2832 12.6168 15.4661 12.6605 15.5658 12.6991L15.9266 11.7664ZM15.0507 11.5991L15.1419 10.6033C14.6747 10.5605 14.1965 10.5933 13.7122 10.6902L13.9085 11.6708L14.1048 12.6513C14.4259 12.587 14.7091 12.572 14.9594 12.595L15.0507 11.5991ZM13.9085 11.6708L13.7122 10.6902C13.2466 10.7835 12.7308 10.949 12.3552 11.3002L13.0382 12.0306L13.7213 12.761C13.6922 12.7882 13.6927 12.7762 13.7642 12.7467C13.8331 12.7182 13.9427 12.6838 14.1048 12.6513L13.9085 11.6708ZM13.0382 12.0306L12.3813 11.2767C12.0262 11.5861 11.7296 12.0857 11.8546 12.7102L12.8352 12.5139L13.8157 12.3176C13.8369 12.4236 13.8266 12.5434 13.7817 12.6501C13.7617 12.6977 13.7392 12.7321 13.7226 12.7538C13.7143 12.7646 13.7073 12.7723 13.7027 12.7772C13.698 12.7821 13.6953 12.7845 13.6952 12.7846L13.0382 12.0306ZM12.8352 12.5139L11.8546 12.7102C11.9493 13.1832 12.2543 13.528 12.6401 13.7183L13.0823 12.8214L13.5246 11.9245C13.5653 11.9446 13.633 11.9876 13.6969 12.0672C13.7629 12.1492 13.8 12.2392 13.8157 12.3176L12.8352 12.5139ZM13.0823 12.8214L12.6856 13.7393C12.9592 13.8575 13.2713 13.9128 13.5637 13.9425L13.6644 12.9475L13.7652 11.9526C13.6665 11.9426 13.5932 11.9308 13.5413 11.9195C13.4875 11.9078 13.4709 11.8999 13.4791 11.9034L13.0823 12.8214ZM13.6644 12.9475L13.5519 13.9412L14.3262 14.0289L14.4387 13.0352L14.5513 12.0416L13.777 11.9539L13.6644 12.9475ZM14.4387 13.0352L14.3276 14.029C15.1548 14.1215 15.7244 14.3124 16.0986 14.5454L16.6271 13.6965L17.1557 12.8476C16.4424 12.4035 15.5531 12.1536 14.5498 12.0414L14.4387 13.0352ZM16.6271 13.6965L16.1162 14.5561C16.383 14.7147 16.5919 14.9775 16.693 15.4823L17.6735 15.286L18.6541 15.0897C18.462 14.1302 17.9733 13.3333 17.1381 12.8369L16.6271 13.6965ZM17.6735 15.286L16.693 15.4823C16.7722 15.8777 16.7139 16.195 16.5407 16.4885L17.4021 16.9966L18.2634 17.5046C18.7014 16.762 18.8241 15.9389 18.6541 15.0897L17.6735 15.286ZM17.4021 16.9966L16.5461 16.4795C16.3787 16.7566 16.0568 17.0478 15.4592 17.3002L15.8483 18.2214L16.2374 19.1426C17.0967 18.7797 17.8106 18.2543 18.258 17.5136L17.4021 16.9966ZM15.8483 18.2214L14.8678 18.4178L15.0876 19.516L16.0682 19.3196L17.0487 19.1233L16.8288 18.0251L15.8483 18.2214ZM16.0682 19.3196L15.6638 18.405C15.615 18.4266 15.5158 18.4663 15.3507 18.5273L15.6975 19.4652L16.0444 20.4032C16.2161 20.3397 16.3639 20.2823 16.4725 20.2342L16.0682 19.3196ZM15.6975 19.4652L15.3507 18.5273C15.2332 18.5708 15.1079 18.6063 14.9741 18.6331L15.1704 19.6136L15.3667 20.5941C15.599 20.5477 15.8251 20.4842 16.0444 20.4032L15.6975 19.4652ZM15.1704 19.6136L14.9741 18.6331C14.8522 18.6575 14.7667 18.663 14.7118 18.6615C14.6576 18.6599 14.6437 18.6519 14.6554 18.6564L14.2946 19.5891L13.9338 20.5217C14.4055 20.7042 14.9097 20.6856 15.3667 20.5941L15.1704 19.6136ZM14.2946 19.5891L14.6244 18.645C14.6877 18.6671 14.742 18.6999 14.7845 18.7358C14.8254 18.7703 14.8471 18.8007 14.8551 18.8134C14.8627 18.8253 14.8591 18.8227 14.8499 18.7975C14.8408 18.7725 14.8286 18.7316 14.8164 18.6708L13.8359 18.8671L12.8553 19.0634C12.9544 19.5579 13.2175 20.2721 13.9647 20.5331L14.2946 19.5891ZM13.8359 18.8671L14.8164 18.6708L14.7889 18.5335L13.8084 18.7298L12.8279 18.9261L12.8553 19.0634L13.8359 18.8671ZM13.8084 18.7298L13.7216 17.7336C13.4358 17.7585 13.1829 17.7581 12.9604 17.7371L12.8667 18.7327L12.7729 19.7283C13.1325 19.7622 13.5075 19.7598 13.8952 19.726L13.8084 18.7298ZM12.8667 18.7327L12.9698 17.7381C12.7621 17.7165 12.5961 17.6756 12.4641 17.6245L12.1033 18.5572L11.7425 19.4898C12.0645 19.6144 12.4075 19.6905 12.7635 19.7274L12.8667 18.7327ZM12.1033 18.5572L12.4839 17.6324C12.3798 17.5896 12.3204 17.5437 12.2838 17.5053L11.5596 18.1949L10.8354 18.8845C11.0881 19.1498 11.3912 19.3455 11.7228 19.4819L12.1033 18.5572ZM11.5596 18.1949L12.2838 17.5053C12.2785 17.4997 12.2667 17.4887 12.2572 17.4412L11.2767 17.6376L10.2962 17.8339C10.3746 18.2257 10.5515 18.5863 10.8354 18.8845L11.5596 18.1949ZM11.2767 17.6376L12.2572 17.4412C12.25 17.4051 12.2526 17.3917 12.2522 17.3946C12.2521 17.3956 12.2517 17.3979 12.2507 17.4008C12.2497 17.4037 12.249 17.4048 12.2497 17.4036L11.3754 16.9182L10.5011 16.4327C10.2547 16.8765 10.2017 17.3619 10.2962 17.8339L11.2767 17.6376ZM11.3754 16.9182L12.261 17.3826C12.3288 17.2533 12.3925 17.1817 12.4399 17.1418L11.7954 16.3772L11.1508 15.6127C10.8725 15.8473 10.6562 16.1364 10.4898 16.4538L11.3754 16.9182ZM11.7954 16.3772L11.3439 17.2695C11.7412 17.4705 12.1812 17.6083 12.6514 17.6953L12.8333 16.712L13.0152 15.7286C12.6946 15.6693 12.4427 15.584 12.2468 15.4849L11.7954 16.3772ZM12.8333 16.712L12.6597 17.6968C13.1974 17.7916 13.7452 17.7777 14.2953 17.6675L14.099 16.687L13.9027 15.7064C13.5743 15.7722 13.2782 15.775 13.0069 15.7271L12.8333 16.712ZM14.099 16.687L14.2953 17.6675C14.7839 17.5697 15.3662 17.3877 15.7504 16.9581L15.005 16.2914L14.2596 15.6248C14.3086 15.57 14.3316 15.5738 14.2617 15.6043C14.1959 15.6331 14.0817 15.6706 13.9027 15.7064L14.099 16.687ZM15.005 16.2914L15.7504 16.9581C16.0576 16.6146 16.2777 16.1279 16.1639 15.5597L15.1833 15.756L14.2028 15.9523C14.1867 15.8718 14.1927 15.7856 14.2175 15.7111C14.2399 15.6437 14.2676 15.6159 14.2596 15.6248L15.005 16.2914ZM15.1833 15.756L16.1639 15.5597C16.0644 15.063 15.7445 14.6451 15.2345 14.4526L14.8812 15.3881L14.528 16.3237C14.4651 16.2999 14.3802 16.2499 14.3075 16.1614C14.2368 16.0752 14.211 15.9933 14.2028 15.9523L15.1833 15.756ZM14.8812 15.3881L15.275 14.4689C14.9919 14.3477 14.6677 14.2769 14.3398 14.2326L14.2058 15.2235L14.0717 16.2145C14.3114 16.2469 14.4374 16.2859 14.4875 16.3074L14.8812 15.3881ZM14.2058 15.2235L14.3296 14.2312L13.7146 14.1545L13.5908 15.1468L13.4669 16.1391L14.082 16.2159L14.2058 15.2235Z" fill="black" mask="url(#path-6-outside-1_2499_72)"/>
+<defs>
+<linearGradient id="paint0_linear_2499_72" x1="14.1712" y1="25.0353" x2="14.1712" y2="-3.14107" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCC00"/>
+<stop offset="1" stop-color="#FFFB00"/>
+</linearGradient>
+</defs>
+</svg>
+
+      <span class="num" id="totalCoins">0</span>
+      <span class="lbl">Coins</span>
+    </div>
+  </div>
+
+  <div class="streak-line">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
+    </svg>
+    <span>Streak continues — day 4</span>
+  </div>
+
+  <button class="btn btn-primary" id="continueBtn">Continue</button>
+</div>
+
+<script>
+/* ---------------- round definitions ---------------- */
+/* ---------------- round definitions ---------------- */
+const rounds = [
+  { name:'Horizontal',      title:'Trace the horizontal line', a:[0.10,0.50], b:[0.90,0.50] },
+  { name:'Vertical',        title:'Trace the vertical line',   a:[0.50,0.12], b:[0.50,0.88] },
+  { name:'Diagonal left',   title:'Trace the diagonal ↙ line', a:[0.82,0.18], b:[0.18,0.82] },
+  { name:'Diagonal right',  title:'Trace the diagonal ↗ line', a:[0.18,0.82], b:[0.82,0.18] },
+  { name:'Long straight line', title:'Trace the long straight line', a:[0.08,0.20], b:[0.92,0.80] },
+];
+
+const tips = [
+  'Look at where the line ends before you start drawing, not at your pen.',
+  'Draw in one smooth, confident stroke instead of many small ones.',
+  'Keep your wrist loose — lock your shoulder and swing from the elbow.',
+  'Slow down slightly on long lines so your hand can correct its path.',
+  'Picture the finish point as a target and aim straight for it.'
+];
+
+let roundIndex = 0;
+let attemptsThisRound = 0;
+let totalXp = 0;
+let totalCoins = 0;
+
+// Multi-stroke tracking (was: single strokePoints array that got wiped on every new stroke)
+let strokes = [];          // finished strokes: array of arrays of [x,y]
+let currentStroke = [];    // stroke currently being drawn
+let hasDrawn = false;
+let drawing = false;
+
+/* ---------------- DOM refs ---------------- */
+const progressTrack = document.getElementById('progressTrack');
+const roundLabel = document.getElementById('roundLabel');
+const roundTitle = document.getElementById('roundTitle');
+const hintPill = document.getElementById('hintPill');
+const canvasWrap = document.getElementById('canvasWrap');
+const guideCanvas = document.getElementById('guideCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const gctx = guideCanvas.getContext('2d');
+const dctx = drawCanvas.getContext('2d');
+const clearBtn = document.getElementById('clearBtn');
+const checkBtn = document.getElementById('checkBtn');
+const feedbackOverlay = document.getElementById('feedbackOverlay');
+const feedbackIcon = document.getElementById('feedbackIcon');
+const feedbackTitle = document.getElementById('feedbackTitle');
+const feedbackScore = document.getElementById('feedbackScore');
+const nextBtn = document.getElementById('nextBtn');
+const nextBtnLabel = document.getElementById('nextBtnLabel');
+const failureOverlay = document.getElementById('failureOverlay');
+const failureSub = document.getElementById('failureSub');
+const failureTip = document.getElementById('failureTip');
+const retryBtn = document.getElementById('retryBtn');
+const toast = document.getElementById('toast');
+const toastXp = document.getElementById('toastXp');
+const toastCoin = document.getElementById('toastCoin');
+const successScreen = document.getElementById('successScreen');
+const totalXpEl = document.getElementById('totalXp');
+const totalCoinsEl = document.getElementById('totalCoins');
+const continueBtn = document.getElementById('continueBtn');
+
+/* ---------------- icons ---------------- */
+const ICONS = {
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20.1l1.4-6.3-4.8-4.3 6.4-.6L12 3z"></path></svg>',
+  thumb:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11M2 13v7a2 2 0 0 0 2 2h12.6a2 2 0 0 0 2-1.6l1.3-6A2 2 0 0 0 18 12h-5l1-5.5A1.5 1.5 0 0 0 12.6 4.8L7 11"></path></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"></path><path d="M20 5v6h-6"></path></svg>'
+};
+
+/* ---------------- setup canvas ---------------- */
+function sizeCanvases(){
+  const rect = canvasWrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  [guideCanvas, drawCanvas].forEach(c=>{
+    c.width = rect.width * dpr;
+    c.height = rect.height * dpr;
+  });
+  gctx.setTransform(dpr,0,0,dpr,0,0);
+  dctx.setTransform(dpr,0,0,dpr,0,0);
+  drawGuide();
+}
+
+function pt(p){
+  const rect = canvasWrap.getBoundingClientRect();
+  return [p[0]*rect.width, p[1]*rect.height];
+}
+
+function drawGuide(){
+  const rect = canvasWrap.getBoundingClientRect();
+  gctx.clearRect(0,0,rect.width,rect.height);
+  const r = rounds[roundIndex];
+  const [ax,ay] = pt(r.a);
+  const [bx,by] = pt(r.b);
+
+  gctx.save();
+  gctx.strokeStyle = '#C9C1AE';
+  gctx.lineWidth = 4;
+  gctx.lineCap = 'round';
+  gctx.setLineDash([2,14]);
+  gctx.beginPath();
+  gctx.moveTo(ax,ay);
+  gctx.lineTo(bx,by);
+  gctx.stroke();
+  gctx.restore();
+
+  gctx.beginPath();
+  gctx.arc(ax,ay,7,0,Math.PI*2);
+  gctx.fillStyle = '#8FD44C';
+  gctx.fill();
+  gctx.lineWidth = 3;
+  gctx.strokeStyle = '#2E2A24';
+  gctx.stroke();
+
+  gctx.beginPath();
+  gctx.arc(bx,by,7,0,Math.PI*2);
+  gctx.fillStyle = '#FE6474';
+  gctx.fill();
+  gctx.stroke();
+}
+
+function clearDraw(){
+  const rect = canvasWrap.getBoundingClientRect();
+  dctx.clearRect(0,0,rect.width,rect.height);
+  strokes = [];
+  currentStroke = [];
+  hasDrawn = false;
+  checkBtn.disabled = true;
+}
+
+/* ---------------- drawing input ---------------- */
+function getPos(e){
+  const rect = drawCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return [clientX-rect.left, clientY-rect.top];
+}
+
+function startDraw(e){
+  e.preventDefault();
+  drawing = true;
+  currentStroke = [];
+  const [x,y] = getPos(e);
+  currentStroke.push([x,y]);
+  dctx.beginPath();
+  dctx.moveTo(x,y);
+}
+function moveDraw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const [x,y] = getPos(e);
+  currentStroke.push([x,y]);
+  dctx.strokeStyle = '#4279DA';
+  dctx.lineWidth = 6;
+  dctx.lineCap = 'round';
+  dctx.lineJoin = 'round';
+  dctx.lineTo(x,y);
+  dctx.stroke();
+}
+function endDraw(e){
+  if(!drawing) return;
+  drawing = false;
+  if(currentStroke.length > 1){
+    strokes.push(currentStroke);
+  }
+  currentStroke = [];
+  const totalPoints = strokes.reduce((n,s)=>n+s.length, 0);
+  hasDrawn = totalPoints > 3;
+  checkBtn.disabled = !hasDrawn;
+}
+
+drawCanvas.addEventListener('pointerdown', startDraw);
+drawCanvas.addEventListener('pointermove', moveDraw);
+window.addEventListener('pointerup', endDraw);
+drawCanvas.addEventListener('touchstart', startDraw, {passive:false});
+drawCanvas.addEventListener('touchmove', moveDraw, {passive:false});
+window.addEventListener('touchend', endDraw);
+
+clearBtn.addEventListener('click', ()=> clearDraw());
+
+/* ---------------- scoring ---------------- */
+/*
+  Four weighted factors, each 0..1, combined as:
+    40% guide coverage   — how much of the guide's length was actually traced
+    30% accuracy         — how close drawn points stay to the guide line
+    20% stroke length     — total drawn length vs. expected guide length
+    10% smoothness/continuity — one clean stroke vs. many jagged/disconnected ones
+
+  Hard floors are applied afterward so a lucky short/scribbled stroke
+  can never slip through with an inflated score (a dot must score ~0-5,
+  a short stub ~5-20, etc. — matching the required score bands).
+*/
+function scoreStroke(){
+  const r = rounds[roundIndex];
+  const [ax,ay] = pt(r.a);
+  const [bx,by] = pt(r.b);
+  const dx = bx-ax, dy = by-ay;
+  const guideLen = Math.hypot(dx,dy);
+  const ux = dx/guideLen, uy = dy/guideLen;
+
+  const allPoints = strokes.flat();
+  if(allPoints.length < 2 || guideLen === 0) return 0;
+
+  // ---- total drawn length (sum within each stroke; gaps between separate
+  //      strokes are NOT counted as drawn distance) ----
+  let drawnLength = 0;
+  strokes.forEach(stroke=>{
+    for(let i=1;i<stroke.length;i++){
+      drawnLength += Math.hypot(stroke[i][0]-stroke[i-1][0], stroke[i][1]-stroke[i-1][1]);
+    }
+  });
+  const lengthRatio = drawnLength / guideLen;
+
+  // ---- 1) coverage: sample the guide at fixed intervals, check whether
+  //      the user's drawing actually passed near each sample point ----
+  const SAMPLES = 40;
+  const coverThreshold = Math.max(16, guideLen * 0.05);
+  let coveredCount = 0;
+  for(let i=0;i<=SAMPLES;i++){
+    const t = i/SAMPLES;
+    const sx = ax + dx*t, sy = ay + dy*t;
+    let minDist = Infinity;
+    for(const p of allPoints){
+      const d = Math.hypot(p[0]-sx, p[1]-sy);
+      if(d < minDist){ minDist = d; if(minDist < coverThreshold) break; }
+    }
+    if(minDist <= coverThreshold) coveredCount++;
+  }
+  const coverage = coveredCount / (SAMPLES+1); // 0..1
+
+  // ---- 2) accuracy: perpendicular distance of every drawn point to the
+  //      guide segment (clamped to the segment, not the infinite line) ----
+  let devSum = 0;
+  let strayCount = 0;
+  allPoints.forEach(([x,y])=>{
+    const vx = x-ax, vy = y-ay;
+    const proj = Math.max(0, Math.min(guideLen, vx*ux + vy*uy));
+    const cx = ax + ux*proj, cy = ay + uy*proj;
+    const dist = Math.hypot(x-cx, y-cy);
+    devSum += dist;
+    if(dist > guideLen * 0.15) strayCount++; // point wandered well off the guide
+  });
+  const avgDev = devSum / allPoints.length;
+  const devNorm = Math.min(1, avgDev / (guideLen * 0.12));
+  const accuracyScore = Math.max(0, 1 - devNorm);
+  const strayPenalty = (strayCount / allPoints.length) * 0.4; // up to -40%
+
+  // ---- 3) stroke length: penalize a stub hard, tolerate a bit of overshoot,
+  //      then decay for excessive scribbled-over-length drawings ----
+  let lengthScore;
+  if(lengthRatio < 0.15){
+    lengthScore = 0;
+  } else if(lengthRatio < 0.8){
+    lengthScore = lengthRatio / 0.8;
+  } else if(lengthRatio <= 1.3){
+    lengthScore = 1;
+  } else {
+    lengthScore = Math.max(0, 1 - (lengthRatio - 1.3) * 0.5);
+  }
+
+  // ---- 4) smoothness & continuity: reward a stroke whose path length is
+  //      close to its straight-line span (i.e. not shaky/looping), and
+  //      penalize multiple disconnected strokes (pen lifts) ----
+  let smoothnessSum = 0, smoothCount = 0;
+  strokes.forEach(stroke=>{
+    if(stroke.length < 2) return;
+    const [x0,y0] = stroke[0];
+    const [x1,y1] = stroke[stroke.length-1];
+    const straight = Math.hypot(x1-x0, y1-y0);
+    let path = 0;
+    for(let i=1;i<stroke.length;i++){
+      path += Math.hypot(stroke[i][0]-stroke[i-1][0], stroke[i][1]-stroke[i-1][1]);
+    }
+    if(path > 0){
+      smoothnessSum += Math.min(1, straight/path);
+      smoothCount++;
+    }
+  });
+  const smoothness = smoothCount ? smoothnessSum / smoothCount : 0;
+  const strokeCountPenalty = Math.max(0, (strokes.length - 1) * 0.15);
+  const continuityScore = Math.max(0, smoothness - strokeCountPenalty);
+
+  // ---- combine ----
+  let score = (
+    coverage        * 0.40 +
+    accuracyScore   * 0.30 +
+    lengthScore     * 0.20 +
+    continuityScore * 0.10
+  ) * 100;
+
+  score -= strayPenalty * 100;
+
+  // ---- hard floors: no factor combination can fake a pass on a dot or
+  //      barely-started line, regardless of lucky coverage/accuracy ----
+  if(drawnLength < guideLen * 0.12 || lengthRatio < 0.15){
+    score = Math.min(score, 8);     // dot / tiny mark
+  } else if(coverage < 0.30){
+    score = Math.min(score, 20);    // touched only a fraction of the guide
+  } else if(coverage < 0.55){
+    score = Math.min(score, 55);
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/* ---------------- flow control ---------------- */
+function updateHeader(){
+  progressTrack.innerHTML = '';
+  rounds.forEach((r,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'progress-seg' + (i < roundIndex ? ' filled' : '') + (i === roundIndex ? ' active' : '');
+    progressTrack.appendChild(seg);
+  });
+  roundLabel.textContent = 'Line ' + (roundIndex+1) + ' of ' + rounds.length;
+  roundTitle.textContent = rounds[roundIndex].title;
+}
+
+function showToast(xp, coins){
+  toastXp.textContent = '+' + xp + ' XP';
+  toastCoin.textContent = '+' + coins;
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), 1400);
+}
+
+checkBtn.addEventListener('click', ()=>{
+  if(!hasDrawn) return;
+  const score = scoreStroke();
+  feedbackScore.textContent = score;
+
+  if(score >= 85){
+    feedbackIcon.className = 'feedback-icon excellent';
+    feedbackIcon.innerHTML = ICONS.star;
+    feedbackTitle.textContent = 'Excellent!';
+    nextBtnLabel.textContent = roundIndex === rounds.length-1 ? 'Finish' : 'Continue';
+    feedbackOverlay.classList.add('show');
+    nextBtn.dataset.result = 'pass';
+    nextBtn.dataset.xp = 15;
+    nextBtn.dataset.coins = 8;
+  } else if(score >= 60){
+    feedbackIcon.className = 'feedback-icon good';
+    feedbackIcon.innerHTML = ICONS.thumb;
+    feedbackTitle.textContent = 'Good!';
+    nextBtnLabel.textContent = roundIndex === rounds.length-1 ? 'Finish' : 'Continue';
+    feedbackOverlay.classList.add('show');
+    nextBtn.dataset.result = 'pass';
+    nextBtn.dataset.xp = 10;
+    nextBtn.dataset.coins = 5;
+  } else {
+    attemptsThisRound++;
+    const tipIndex = (roundIndex + attemptsThisRound) % tips.length;
+    failureTip.textContent = tips[tipIndex];
+    failureSub.textContent = attemptsThisRound > 1
+      ? 'Still a little off the guide — that\'s okay, straight lines take practice.'
+      : 'Your line wandered a bit off the guide. Take your time on the next try.';
+    failureOverlay.classList.add('show');
+  }
+});
+
+nextBtn.addEventListener('click', ()=>{
+  feedbackOverlay.classList.remove('show');
+  const xp = parseInt(nextBtn.dataset.xp || 10, 10);
+  const coins = parseInt(nextBtn.dataset.coins || 5, 10);
+  totalXp += xp;
+  totalCoins += coins;
+  showToast(xp, coins);
+
+  if(roundIndex === rounds.length-1){
+    setTimeout(showSuccess, 500);
+  } else {
+    roundIndex++;
+    attemptsThisRound = 0;
+    clearDraw();
+    updateHeader();
+    drawGuide();
+  }
+});
+
+retryBtn.addEventListener('click', ()=>{
+  failureOverlay.classList.remove('show');
+  clearDraw();
+});
+
+/* ---------------- success screen ---------------- */
+function buildConfetti(){
+  const holder = document.getElementById('confetti');
+  holder.innerHTML = '';
+  const colors = ['#FFE053','#FE6474','#4279DA','#8FD44C'];
+  for(let i=0;i<36;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100 + '%';
+    s.style.background = colors[i % colors.length];
+    s.style.animationDuration = (2.4 + Math.random()*2) + 's';
+    s.style.animationDelay = (Math.random()*1.6) + 's';
+    s.style.opacity = 0.7 + Math.random()*0.3;
+    s.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    holder.appendChild(s);
+  }
+}
+
+function countUp(el, target, duration){
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    el.textContent = Math.round(target * p);
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function showSuccess(){
+  buildConfetti();
+  successScreen.classList.add('show');
+  countUp(totalXpEl, totalXp, 900);
+  countUp(totalCoinsEl, totalCoins, 900);
+}
+
+continueBtn.addEventListener('click', ()=>{
+  window.location.href = 'home.html';
+});
+
+document.getElementById('exitBtn').addEventListener('click', ()=>{
+  window.location.href = 'home.html';
+});
+
+/* ---------------- init ---------------- */
+window.addEventListener('resize', sizeCanvases);
+updateHeader();
+sizeCanvases();
+</script>
+</body>
+</html>
