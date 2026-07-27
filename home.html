@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Sketch Quest — Roadmap</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <style>
 :root{
   --yellow:#FFE053;
@@ -22,6 +24,22 @@
   --lockgray:#D9D3C4;
 }
 *{ box-sizing:border-box; }
+
+.user-badge .edit-pencil{
+  width:24px; height:24px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:2px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  cursor:pointer;
+  transition:transform .1s ease;
+}
+.user-badge .edit-pencil svg{ width:13px; height:13px; }
+.user-badge .edit-pencil:hover{ transform:scale(1.08) rotate(-6deg); }
+.user-badge .edit-pencil:active{ transform:scale(.9); }
 
 .user-badge{
   position:fixed;
@@ -411,6 +429,12 @@ body{
 <div class="user-badge" id="userBadge">
   <div class="avatar" id="userAvatar">?</div>
   <span id="userName">Loading...</span>
+  <a class="edit-pencil" href="profile-settings.html" aria-label="Edit profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+    </svg>
+  </a>
 </div>
 <div class="page">
 
@@ -564,16 +588,125 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
+const LESSON_ORDER = ['lesson1','lesson2','lesson3','lesson4','lesson5','lesson6','lesson7','lesson8'];
+const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
+
+/* Avatar priority: uploaded pic > selected illustration > first letter of username */
+function renderAvatarInto(el, profile, username){
+  el.innerHTML = '';
+  el.style.background = '';
+  if(profile && profile.avatar_type === 'upload' && profile.avatar_url){
+    el.style.background = 'transparent';
+    var img = document.createElement('img');
+    img.src = profile.avatar_url;
+    img.alt = 'avatar';
+    img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+    el.appendChild(img);
+  } else if(profile && profile.avatar_type === 'illustration' && profile.avatar_illustration){
+    el.style.background = 'transparent';
+    var img2 = document.createElement('img');
+    img2.src = 'assets/avatars/' + profile.avatar_illustration;
+    img2.alt = 'avatar';
+    img2.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+    el.appendChild(img2);
+  } else {
+    el.style.background = 'var(--yellow)';
+    el.textContent = (username || '?').charAt(0).toUpperCase();
+  }
+}
+
+
+function lessonIdFromHref(href){ return href ? href.replace('.html','') : null; }
+
+function loadCachedProgress(){
+  try{ return JSON.parse(localStorage.getItem(PROGRESS_CACHE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProgress(map){
+  try{ localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(map)); } catch(e){}
+}
+
+function renderPath(progressMap){
+  document.querySelectorAll('.node[data-href]').forEach(function(node){
+    const lessonId = lessonIdFromHref(node.dataset.href);
+    if(!lessonId || !LESSON_ORDER.includes(lessonId)) return;
+
+    const idx = LESSON_ORDER.indexOf(lessonId);
+    const prevId = idx > 0 ? LESSON_ORDER[idx-1] : null;
+    const prevDone = idx === 0 ? true : !!(progressMap[prevId] && progressMap[prevId].completed);
+    const entry = progressMap[lessonId];
+
+    const wrap = node.closest('.node-wrap');
+    const row = wrap.closest('.row');
+    node.classList.remove('locked','current','done');
+    wrap.classList.remove('start-wrap');
+    if(row) row.classList.remove('row-start');
+    const oldPill = wrap.querySelector('.start-pill');
+    if(oldPill) oldPill.remove();
+
+    if(entry && entry.completed){
+      node.classList.add('done');
+    } else if(prevDone){
+      node.classList.add('current');
+      wrap.classList.add('start-wrap');
+      if(row) row.classList.add('row-start');
+      const pill = document.createElement('div');
+      pill.className = 'start-pill';
+      pill.textContent = (entry && entry.current_round > 0) ? 'Continue' : 'Start';
+      wrap.insertBefore(pill, wrap.firstChild);
+    } else {
+      node.classList.add('locked');
+    }
+  });
+}
+
+const PROFILE_CACHE_KEY = 'sketchquest_profile_cache';
+function loadCachedProfile(){
+  try{ return JSON.parse(localStorage.getItem(PROFILE_CACHE_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function cacheProfile(p){
+  try{ localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(p)); }catch(e){}
+}
+
 (async () => {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
-    // no one logged in — bounce back to the login page
     window.location.href = "login.html";
     return;
   }
   const username = session.user.user_metadata?.username || session.user.user_metadata?.display_name || "Artist";
   document.getElementById('userName').textContent = username;
-  document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+
+  // paint instantly from cache — no flash of the plain letter avatar while we fetch
+  renderAvatarInto(document.getElementById('userAvatar'), loadCachedProfile(), username);
+  renderPath(loadCachedProgress());
+  drawPathLines();
+
+  const [{ data: profileRow }, { data: rows, error }] = await Promise.all([
+    supabaseClient
+      .from('profiles')
+      .select('avatar_type, avatar_illustration, avatar_url')
+      .eq('id', session.user.id)
+      .single(),
+    supabaseClient
+      .from('lesson_progress')
+      .select('lesson_id, completed, xp, coins, current_round')
+      .eq('user_id', session.user.id)
+  ]);
+
+  if(profileRow){
+    cacheProfile(profileRow);
+    renderAvatarInto(document.getElementById('userAvatar'), profileRow, username);
+  }
+
+  if(!error && rows){
+    const map = {};
+    rows.forEach(function(r){ map[r.lesson_id] = r; });
+    cacheProgress(map);
+    renderPath(map);
+    drawPathLines();
+  }
 })();
 
 function closeAllPopups(){
@@ -582,51 +715,47 @@ function closeAllPopups(){
   document.querySelectorAll('.row.popup-active').forEach(function(r){ r.classList.remove('popup-active'); });
 }
 
-document.querySelectorAll('.node.locked').forEach(function(node){
-  node.addEventListener('click', function(e){
+document.querySelectorAll('.path').forEach(function(pathEl){
+  pathEl.addEventListener('click', function(e){
+    var node = e.target.closest('.node');
+    if(!node) return;
     e.stopPropagation();
-    var wrap = node.parentElement;
-    var alreadyOpen = wrap.querySelector('.lesson-popup');
-    closeAllPopups();
 
-    node.classList.remove('locked-shake');
-    void node.offsetWidth; /* restart the shake animation on every click */
-    node.classList.add('locked-shake');
+    if(node.classList.contains('locked')){
+      var wrap = node.parentElement;
+      var alreadyOpen = wrap.querySelector('.lesson-popup');
+      closeAllPopups();
 
-    if(alreadyOpen) return;
+      node.classList.remove('locked-shake');
+      void node.offsetWidth; /* restart the shake animation on every click */
+      node.classList.add('locked-shake');
 
-    wrap.classList.add('popup-open');
-    var row = wrap.closest('.row');
-    if(row){ row.classList.add('popup-active'); }
+      if(alreadyOpen) return;
 
-    var popup = document.createElement('div');
-    popup.className = 'lesson-popup';
-    popup.innerHTML =
-      '<div class="popup-arrow"></div>' +
-      '<p class="popup-title">' + (node.dataset.title || 'Lesson') + '</p>' +
-      '<p class="popup-sub">' + (node.dataset.sub || '') + '</p>' +
-      '<button type="button" class="popup-start" disabled>' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
-          '<rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>' +
-          '<path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>' +
-        '</svg> Locked</button>';
-    wrap.appendChild(popup);
-    /* locked lessons are preview-only: no href is wired up here on purpose,
-       so the button can't be used to jump ahead to a lesson that hasn't
-       been unlocked yet */
+      wrap.classList.add('popup-open');
+      var row = wrap.closest('.row');
+      if(row){ row.classList.add('popup-active'); }
+
+      var popup = document.createElement('div');
+      popup.className = 'lesson-popup';
+      popup.innerHTML =
+        '<div class="popup-arrow"></div>' +
+        '<p class="popup-title">' + (node.dataset.title || 'Lesson') + '</p>' +
+        '<p class="popup-sub">' + (node.dataset.sub || '') + '</p>' +
+        '<button type="button" class="popup-start" disabled>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>' +
+            '<path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>' +
+          '</svg> Locked</button>';
+      wrap.appendChild(popup);
+      /* locked lessons are preview-only: no href is wired up on purpose,
+         so this button can never jump ahead to a lesson not yet unlocked */
+    } else if(node.dataset.href){
+      node.classList.add('node-punch');
+      window.location.href = node.dataset.href;
+    }
   });
 });
-
-/* unlocked / current / done nodes go straight to their lesson */
-document.querySelectorAll('.node:not(.locked)').forEach(function(node){
-  if(!node.dataset.href) return;
-  node.addEventListener('click', function(e){
-    e.stopPropagation();
-    node.classList.add('node-punch');
-    window.location.href = node.dataset.href;
-  });
-});
-
 document.addEventListener('click', closeAllPopups);
 
 /* ---- draw connecting line between each lesson node in a path ---- */
