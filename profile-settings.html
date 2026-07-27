@@ -123,6 +123,25 @@ body{
 }
 .avatar-preview img{ width:100%; height:100%; object-fit:cover; }
 
+.avatar-edit-btn{
+  position:absolute;
+  bottom:-2px; right:-6px;
+  width:34px; height:34px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  box-shadow:0 3px 0 var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:2;
+  padding:0;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.avatar-edit-btn:active{ transform:translateY(3px); box-shadow:0 0 0 var(--ink); }
+.avatar-edit-btn svg{ width:16px; height:16px; }
+
 .avatar-spinner{
   position:absolute;
   inset:-4px;
@@ -192,8 +211,13 @@ body{
   border:4px solid var(--lockgray);
   background:var(--cream);
   cursor:pointer;
-  overflow:hidden;
   transition:transform .1s ease, border-color .15s ease;
+}
+.illus-item-img{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:hidden;
 }
 .illus-item img{ width:100%; height:100%; object-fit:cover; display:block; }
 .illus-item:hover{ transform:translateY(-2px); }
@@ -419,6 +443,12 @@ body{
     <div class="avatar-preview-wrap">
       <div class="avatar-preview" id="avatarPreview">?</div>
       <div class="avatar-spinner" id="avatarSpinner"><div class="spin"></div></div>
+      <button class="avatar-edit-btn" id="uploadZone" type="button" aria-label="Upload custom photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+        </svg>
+      </button>
     </div>
     <p class="uname" id="pname">Loading...</p>
     <p class="usub">Tap a picture below to change it</p>
@@ -429,15 +459,7 @@ body{
     <p class="card-sub">Pick one of your 5 default avatars</p>
     <div class="illus-grid" id="illusGrid"></div>
   </div>
-
-  <div class="card">
-    <h2>Upload your own</h2>
-    <p class="card-sub">JPG, PNG or WebP · up to 2MB</p>
-    <div class="upload-zone" id="uploadZone">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"></path><path d="M6 10l6-6 6 6"></path><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
-      <p>Tap to upload a photo</p>
-      <span>You'll be able to crop it next</span>
-    </div>
+    <div class="illus-grid" id="illusGrid"></div>
     <input type="file" id="uploadInput" class="upload-input" accept="image/jpeg,image/png,image/webp">
     <p class="upload-error" id="uploadError"></p>
   </div>
@@ -574,8 +596,8 @@ function renderIllusGrid(){
     if(current.avatar_type === 'illustration' && current.avatar_illustration === file){
       item.classList.add('selected');
     }
-    item.innerHTML = '<img src="' + ILLUSTRATION_PATH + file + '" alt="avatar option">' +
-      '<div class="illus-check"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"></path></svg></div>';
+    item.innerHTML = '<div class="illus-item-img"><img src="' + ILLUSTRATION_PATH + file + '" alt="avatar option"></div>' +
+  '<div class="illus-check"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"></path></svg></div>';
     item.addEventListener('click', function(){
       current.avatar_type = 'illustration';
       current.avatar_illustration = file;
