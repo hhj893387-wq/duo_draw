@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Sketch Quest — Lesson 1: Straight Lines</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -23,34 +25,39 @@
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body{ margin:0; padding:0; }
+html{ height:100%; }
 body{
   font-family:'Baloo 2','Nunito',sans-serif;
   background:var(--cream);
   color:var(--ink);
-  min-height:100vh;
-  overflow-x:hidden;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
 }
 h1,h2,h3{ font-family:'Baloo 2',sans-serif; margin:0; }
 p,span,button{ font-family:'Nunito',sans-serif; }
 
 .page{
   max-width:480px;
+  height:100vh;
+  height:100dvh;
   margin:0 auto;
-  padding:18px 18px 40px;
-  min-height:100vh;
+  padding:clamp(8px,1.6vh,18px) clamp(12px,4vw,18px) clamp(8px,1.6vh,16px);
   display:flex;
   flex-direction:column;
+  overflow:hidden;
 }
 
 /* ---------- top bar ---------- */
 .topbar{
   display:flex;
   align-items:center;
-  gap:14px;
-  margin-bottom:22px;
+  gap:clamp(8px,2vw,14px);
+  margin-bottom:clamp(6px,1.6vh,22px);
+  flex-shrink:0;
 }
 .exit-btn{
-  width:40px; height:40px;
+  width:clamp(30px,4.2vh,40px); height:clamp(30px,4.2vh,40px);
   border-radius:50%;
   border:3px solid var(--ink);
   background:var(--white);
@@ -63,11 +70,11 @@ p,span,button{ font-family:'Nunito',sans-serif; }
   transition:transform .1s ease, box-shadow .1s ease;
 }
 .exit-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
-.exit-btn svg{ width:18px; height:18px; }
+.exit-btn svg{ width:clamp(14px,2.2vh,18px); height:clamp(14px,2.2vh,18px); }
 
 .progress-track{
   flex:1;
-  height:18px;
+  height:clamp(12px,2vh,18px);
   background:var(--white);
   border:3px solid var(--ink);
   border-radius:999px;
@@ -87,17 +94,19 @@ p,span,button{ font-family:'Nunito',sans-serif; }
 .round-label{
   text-align:center;
   font-weight:800;
-  font-size:12px;
+  font-size:clamp(10px,1.4vh,12px);
   letter-spacing:.06em;
   text-transform:uppercase;
   color:var(--blue);
-  margin-bottom:6px;
+  margin-bottom:clamp(2px,.7vh,6px);
+  flex-shrink:0;
 }
 .round-title{
   text-align:center;
-  font-size:24px;
+  font-size:clamp(16px,2.6vh,24px);
   font-weight:800;
-  margin-bottom:18px;
+  margin-bottom:clamp(8px,1.8vh,18px);
+  flex-shrink:0;
 }
 
 /* ---------- canvas card ---------- */
@@ -107,16 +116,22 @@ p,span,button{ font-family:'Nunito',sans-serif; }
   border:4px solid var(--ink);
   border-radius:var(--radius-lg);
   box-shadow:0 var(--shadow-off) 0 var(--ink);
-  padding:16px;
-  flex:1;
+  padding:clamp(8px,1.6vh,16px);
+  flex:1 1 auto;
+  min-height:0;
   display:flex;
   flex-direction:column;
   align-items:center;
+  justify-content:center;
+  overflow:hidden;
 }
 
 .canvas-wrap{
   position:relative;
-  width:100%;
+  width:min(100%, 62vh, 62dvh);
+  height:min(100%, 62vh, 62dvh);
+  max-width:100%;
+  max-height:100%;
   aspect-ratio:1/1;
   border-radius:var(--radius-md);
   overflow:hidden;
@@ -126,6 +141,7 @@ p,span,button{ font-family:'Nunito',sans-serif; }
   background-size:24px 24px;
   border:3px dashed #E3DCC9;
   touch-action:none;
+  flex-shrink:1;
 }
 .canvas-wrap canvas{
   position:absolute;
@@ -137,18 +153,20 @@ p,span,button{ font-family:'Nunito',sans-serif; }
 #drawCanvas{ z-index:2; cursor:crosshair; }
 
 .hint-pill{
-  margin-top:14px;
-  font-size:13px;
+  margin-top:clamp(6px,1.4vh,14px);
+  font-size:clamp(11px,1.5vh,13px);
   font-weight:700;
   color:var(--gray);
   text-align:center;
+  flex-shrink:0;
 }
 
 .controls-row{
   display:flex;
-  gap:12px;
+  gap:clamp(8px,2vw,12px);
   width:100%;
-  margin-top:16px;
+  margin-top:clamp(8px,1.8vh,16px);
+  flex-shrink:0;
 }
 
 /* ---------- chunky buttons (from styles.css pattern) ---------- */
@@ -948,7 +966,6 @@ checkBtn.addEventListener('click', ()=>{
     failureOverlay.classList.add('show');
   }
 });
-
 nextBtn.addEventListener('click', ()=>{
   feedbackOverlay.classList.remove('show');
   const xp = parseInt(nextBtn.dataset.xp || 10, 10);
@@ -958,6 +975,7 @@ nextBtn.addEventListener('click', ()=>{
   showToast(xp, coins);
 
   if(roundIndex === rounds.length-1){
+    persistProgress({ completed:true, xp:totalXp, coins:totalCoins, current_round:roundIndex });
     setTimeout(showSuccess, 500);
   } else {
     roundIndex++;
@@ -965,6 +983,7 @@ nextBtn.addEventListener('click', ()=>{
     clearDraw();
     updateHeader();
     drawGuide();
+    persistProgress({ completed:false, xp:totalXp, coins:totalCoins, current_round:roundIndex });
   }
 });
 
@@ -1012,13 +1031,104 @@ continueBtn.addEventListener('click', ()=>{
 });
 
 document.getElementById('exitBtn').addEventListener('click', ()=>{
+  persistProgress({ xp:totalXp, coins:totalCoins, current_round:roundIndex });
   window.location.href = 'home.html';
+});
+/* ---------------- progress sync ---------------- */
+const LESSON_ID = 'lesson2';   // change to lesson1, lesson2, ... per file
+const UNIT_ID = 'unit1';       // change to unit2 for lessons 6-8
+const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
+let currentUserId = null;
+let saveQueued = false;
+
+function loadCachedProgress(){
+  try{ return JSON.parse(localStorage.getItem(PROGRESS_CACHE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProgress(map){
+  try{ localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(map)); } catch(e){}
+}
+function upsertLocalEntry(patch){
+  const map = loadCachedProgress();
+  const existing = map[LESSON_ID] || { lesson_id:LESSON_ID, completed:false, xp:0, coins:0, current_round:0 };
+  map[LESSON_ID] = Object.assign({}, existing, patch);
+  cacheProgress(map);
+  return map[LESSON_ID];
+}
+
+async function persistProgress(patch){
+  const entry = upsertLocalEntry(patch); // instant local save, works offline
+  if(!currentUserId){ saveQueued = true; return; }
+  try{
+    await supabaseClient.from('lesson_progress').upsert({
+      user_id: currentUserId,
+      lesson_id: LESSON_ID,
+      unit_id: UNIT_ID,
+      completed: entry.completed,
+      xp: entry.xp,
+      coins: entry.coins,
+      current_round: entry.current_round,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,lesson_id' });
+  } catch(e){
+    saveQueued = true; // will retry on the next successful persistProgress call
+  }
+}
+
+function saveOnExitOrRefresh(){
+  if(!currentUserId) return;
+  const entry = loadCachedProgress()[LESSON_ID];
+  if(!entry) return;
+  const payload = JSON.stringify({
+    user_id: currentUserId, lesson_id: LESSON_ID, unit_id: UNIT_ID,
+    completed: entry.completed, xp: entry.xp, coins: entry.coins,
+    current_round: entry.current_round, updated_at: new Date().toISOString()
+  });
+  try{
+    navigator.sendBeacon(
+      SUPABASE_URL + '/rest/v1/lesson_progress?on_conflict=user_id,lesson_id',
+      new Blob([payload], { type:'application/json' })
+    );
+  } catch(e){ /* best effort */ }
+}
+
+async function initProgress(){
+  const { data:{ session } } = await supabaseClient.auth.getSession();
+  if(!session){ window.location.href = 'login.html'; return; }
+  currentUserId = session.user.id;
+
+  const cached = loadCachedProgress()[LESSON_ID];
+  if(cached && cached.completed){ window.location.href = 'home.html'; return; }
+  if(cached && cached.current_round > 0){
+    roundIndex = Math.min(cached.current_round, rounds.length - 1);
+  }
+
+  const { data, error } = await supabaseClient
+    .from('lesson_progress')
+    .select('completed, xp, coins, current_round')
+    .eq('user_id', currentUserId)
+    .eq('lesson_id', LESSON_ID)
+    .maybeSingle();
+
+  if(!error && data){
+    upsertLocalEntry(data);
+    if(data.completed){ window.location.href = 'roadmap.html'; return; }
+    roundIndex = Math.min(data.current_round || 0, rounds.length - 1);
+  }
+
+  updateHeader();
+  drawGuide();
+}
+
+window.addEventListener('beforeunload', saveOnExitOrRefresh);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') saveOnExitOrRefresh();
 });
 
 /* ---------------- init ---------------- */
 window.addEventListener('resize', sizeCanvases);
-updateHeader();
 sizeCanvases();
+initProgress();
 </script>
 </body>
 </html>
