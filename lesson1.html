@@ -966,7 +966,13 @@ checkBtn.addEventListener('click', ()=>{
     failureOverlay.classList.add('show');
   }
 });
+let advancing = false; // guards against double-fire on fast double-tap/click
+
 nextBtn.addEventListener('click', ()=>{
+  if(advancing) return;
+  advancing = true;
+  nextBtn.disabled = true;
+
   feedbackOverlay.classList.remove('show');
   const xp = parseInt(nextBtn.dataset.xp || 10, 10);
   const coins = parseInt(nextBtn.dataset.coins || 5, 10);
@@ -977,6 +983,7 @@ nextBtn.addEventListener('click', ()=>{
   if(roundIndex === rounds.length-1){
     persistProgress({ completed:true, xp:totalXp, coins:totalCoins, current_round:roundIndex });
     setTimeout(showSuccess, 500);
+    // no need to re-enable — success screen takes over navigation
   } else {
     roundIndex++;
     attemptsThisRound = 0;
@@ -984,6 +991,8 @@ nextBtn.addEventListener('click', ()=>{
     updateHeader();
     drawGuide();
     persistProgress({ completed:false, xp:totalXp, coins:totalCoins, current_round:roundIndex });
+    nextBtn.disabled = false;
+    advancing = false;
   }
 });
 
@@ -1035,7 +1044,7 @@ document.getElementById('exitBtn').addEventListener('click', ()=>{
   window.location.href = 'home.html';
 });
 /* ---------------- progress sync ---------------- */
-const LESSON_ID = 'lesson2';   // change to lesson1, lesson2, ... per file
+const LESSON_ID = 'lesson1';   // change to lesson1, lesson2, ... per file
 const UNIT_ID = 'unit1';       // change to unit2 for lessons 6-8
 const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
 let currentUserId = null;
