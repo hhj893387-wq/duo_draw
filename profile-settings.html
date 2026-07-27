@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sketch Quest — Profile Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+:root{
+  --yellow:#FFE053;
+  --coral:#FE6474;
+  --blue:#4279DA;
+  --ink:#2E2A24;
+  --cream:#FFFCF5;
+  --white:#FFFFFF;
+  --gray:#8A8378;
+  --line:#2E2A24;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-off:6px;
+  --green:#8FD44C;
+  --lockgray:#D9D3C4;
+  --red:#E85D5D;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Baloo 2','Nunito',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+}
+.page{
+  max-width:520px;
+  margin:0 auto;
+  padding:20px 20px 140px;
+}
+
+/* ---- top bar ---- */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:22px;
+}
+.back-btn{
+  width:44px; height:44px;
+  border-radius:50%;
+  background:var(--white);
+  border:3px solid var(--ink);
+  box-shadow:0 4px 0 var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.back-btn:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+.back-btn svg{ width:20px; height:20px; }
+.topbar h1{
+  font-family:'Baloo 2',sans-serif;
+  font-size:22px;
+  margin:0;
+}
+
+/* ---- banner (matches unit-banner style) ---- */
+.profile-banner{
+  position:relative;
+  background:var(--blue);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:28px 20px 24px;
+  margin-bottom:28px;
+  color:var(--white);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.profile-banner::before{
+  content:'';
+  position:absolute;
+  width:180px; height:180px;
+  background:var(--coral);
+  border-radius:50%;
+  top:-100px; right:-70px;
+  opacity:.9;
+}
+
+.avatar-preview-wrap{
+  position:relative;
+  z-index:1;
+  width:112px; height:112px;
+  margin-bottom:12px;
+}
+.avatar-preview{
+  width:112px; height:112px;
+  border-radius:50%;
+  border:4px solid var(--ink);
+  background:var(--yellow);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:44px;
+  font-weight:800;
+  color:var(--ink);
+  overflow:hidden;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.avatar-preview.pulse{ animation:avatarPulse .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes avatarPulse{
+  0%{ transform:scale(1); }
+  40%{ transform:scale(1.12) rotate(-3deg); }
+  70%{ transform:scale(.96) rotate(2deg); }
+  100%{ transform:scale(1) rotate(0); }
+}
+.avatar-preview img{ width:100%; height:100%; object-fit:cover; }
+
+.avatar-spinner{
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(46,42,36,.45);
+  z-index:2;
+}
+.avatar-spinner.show{ display:flex; }
+.avatar-spinner .spin{
+  width:34px; height:34px;
+  border:4px solid rgba(255,255,255,.35);
+  border-top-color:var(--white);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.profile-banner .uname{
+  position:relative; z-index:1;
+  font-family:'Baloo 2',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  margin:0;
+}
+.profile-banner .usub{
+  position:relative; z-index:1;
+  font-size:13px;
+  font-weight:700;
+  color:var(--yellow);
+  margin:4px 0 0;
+}
+
+/* ---- section card ---- */
+.card{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:20px;
+  margin-bottom:22px;
+}
+.card h2{
+  font-family:'Baloo 2',sans-serif;
+  font-size:16px;
+  margin:0 0 4px;
+}
+.card .card-sub{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--gray);
+  margin:0 0 16px;
+}
+
+/* ---- illustration grid ---- */
+.illus-grid{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:10px;
+}
+.illus-item{
+  position:relative;
+  aspect-ratio:1/1;
+  border-radius:50%;
+  border:4px solid var(--lockgray);
+  background:var(--cream);
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .1s ease, border-color .15s ease;
+}
+.illus-item img{ width:100%; height:100%; object-fit:cover; display:block; }
+.illus-item:hover{ transform:translateY(-2px); }
+.illus-item:active{ transform:scale(.93); }
+.illus-item.selected{
+  border-color:var(--green);
+  box-shadow:0 3px 0 var(--ink);
+}
+.illus-check{
+  position:absolute;
+  bottom:-4px; right:-4px;
+  width:22px; height:22px;
+  border-radius:50%;
+  background:var(--green);
+  border:3px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transform:scale(.3);
+  transition:opacity .15s ease, transform .15s cubic-bezier(.34,1.76,.64,1);
+}
+.illus-item.selected .illus-check{ opacity:1; transform:scale(1); }
+.illus-check svg{ width:12px; height:12px; stroke:var(--white); stroke-width:3.5; }
+
+/* ---- upload zone ---- */
+.upload-zone{
+  border:3px dashed var(--gray);
+  border-radius:var(--radius-sm);
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .15s ease, background .15s ease;
+}
+.upload-zone:hover{ border-color:var(--blue); background:#F5F8FF; }
+.upload-zone svg{ width:28px; height:28px; stroke:var(--gray); margin-bottom:6px; }
+.upload-zone p{ margin:0; font-weight:800; font-size:14px; }
+.upload-zone span{ display:block; font-size:11.5px; color:var(--gray); font-weight:700; margin-top:2px; }
+.upload-input{ display:none; }
+.upload-error{
+  margin-top:10px;
+  font-size:12.5px;
+  font-weight:800;
+  color:var(--red);
+  display:none;
+}
+.upload-error.show{ display:block; }
+
+/* ---- crop modal ---- */
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(46,42,36,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  padding:20px;
+}
+.modal-overlay.show{ display:flex; }
+.crop-modal{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 8px 0 var(--ink);
+  padding:22px;
+  width:100%;
+  max-width:380px;
+  animation:popupIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popupIn{
+  0%{ opacity:0; transform:scale(.7) translateY(20px); }
+  60%{ opacity:1; transform:scale(1.03); }
+  100%{ opacity:1; transform:scale(1) translateY(0); }
+}
+.crop-modal h3{ font-family:'Baloo 2',sans-serif; font-size:17px; margin:0 0 14px; text-align:center; }
+.crop-stage{
+  position:relative;
+  width:260px; height:260px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  overflow:hidden;
+  border:4px solid var(--ink);
+  background:#222;
+  cursor:grab;
+  touch-action:none;
+}
+.crop-stage:active{ cursor:grabbing; }
+.crop-stage canvas{ display:block; }
+.crop-controls{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.crop-controls svg{ width:16px; height:16px; stroke:var(--gray); flex-shrink:0; }
+.crop-controls input[type="range"]{
+  flex:1;
+  accent-color:var(--coral);
+}
+.crop-btns{ display:flex; gap:10px; }
+.btn{
+  flex:1;
+  padding:12px 14px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease;
+}
+.btn-primary{ background:var(--coral); color:var(--white); box-shadow:0 4px 0 var(--ink); }
+.btn-primary:hover{ background:#FF7A8B; }
+.btn-primary:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+.btn-ghost{ background:var(--white); color:var(--ink); box-shadow:0 4px 0 var(--ink); }
+.btn-ghost:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+
+/* ---- sticky save/discard bar ---- */
+.action-bar{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  display:flex;
+  justify-content:center;
+  z-index:900;
+  pointer-events:none;
+}
+.action-bar-inner{
+  width:100%;
+  max-width:520px;
+  margin:0 20px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 6px 0 var(--ink);
+  padding:14px;
+  display:flex;
+  gap:10px;
+  transform:translateY(140%);
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:auto;
+}
+.action-bar.show .action-bar-inner{ transform:translateY(0); }
+@media (min-width:560px){ .action-bar-inner{ margin-bottom:20px; } }
+
+.btn-save{
+  flex:2;
+  background:var(--green);
+  color:var(--ink);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:0 4px 0 var(--ink);
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:15px;
+  padding:13px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn-save:active:not(:disabled){ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+.btn-save:disabled{ opacity:.7; cursor:not-allowed; }
+.btn-save .spin{
+  width:16px; height:16px;
+  border:3px solid rgba(46,42,36,.3);
+  border-top-color:var(--ink);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+.btn-save.loading .spin{ display:block; }
+.btn-save.loading .save-label{ display:none; }
+
+.btn-discard{
+  flex:1;
+  background:var(--white);
+  color:var(--gray);
+  border:3px solid var(--lockgray);
+  border-radius:var(--radius-sm);
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:15px;
+  padding:13px;
+  cursor:pointer;
+  transition:transform .08s ease;
+}
+.btn-discard:active{ transform:scale(.95); }
+
+/* ---- toast ---- */
+.toast{
+  position:fixed;
+  top:18px;
+  left:50%;
+  transform:translateX(-50%) translateY(-140%);
+  background:var(--ink);
+  color:var(--white);
+  font-weight:800;
+  font-size:14px;
+  padding:12px 20px;
+  border-radius:999px;
+  border:3px solid var(--ink);
+  box-shadow:0 4px 0 rgba(0,0,0,.25);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  z-index:3000;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.show{ transform:translateX(-50%) translateY(0); }
+.toast svg{ width:18px; height:18px; stroke:var(--green); flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="topbar">
+    <div class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    </div>
+    <h1>Profile Settings</h1>
+  </div>
+
+  <div class="profile-banner">
+    <div class="avatar-preview-wrap">
+      <div class="avatar-preview" id="avatarPreview">?</div>
+      <div class="avatar-spinner" id="avatarSpinner"><div class="spin"></div></div>
+    </div>
+    <p class="uname" id="pname">Loading...</p>
+    <p class="usub">Tap a picture below to change it</p>
+  </div>
+
+  <div class="card">
+    <h2>Choose an illustration</h2>
+    <p class="card-sub">Pick one of your 5 default avatars</p>
+    <div class="illus-grid" id="illusGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Upload your own</h2>
+    <p class="card-sub">JPG, PNG or WebP · up to 2MB</p>
+    <div class="upload-zone" id="uploadZone">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"></path><path d="M6 10l6-6 6 6"></path><path d="M4 18v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>
+      <p>Tap to upload a photo</p>
+      <span>You'll be able to crop it next</span>
+    </div>
+    <input type="file" id="uploadInput" class="upload-input" accept="image/jpeg,image/png,image/webp">
+    <p class="upload-error" id="uploadError"></p>
+  </div>
+</div>
+
+<!-- crop modal -->
+<div class="modal-overlay" id="cropOverlay">
+  <div class="crop-modal">
+    <h3>Crop your photo</h3>
+    <div class="crop-stage" id="cropStage">
+      <canvas id="cropCanvas" width="260" height="260"></canvas>
+    </div>
+    <div class="crop-controls">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+      <input type="range" id="zoomRange" min="100" max="300" value="100">
+    </div>
+    <div class="crop-btns">
+      <button class="btn btn-ghost" id="cropCancel">Cancel</button>
+      <button class="btn btn-primary" id="cropConfirm">Use photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- sticky save/discard bar -->
+<div class="action-bar" id="actionBar">
+  <div class="action-bar-inner">
+    <button class="btn-discard" id="discardBtn">Discard</button>
+    <button class="btn-save" id="saveBtn">
+      <div class="spin"></div>
+      <svg class="save-label-icon" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M20 6L9 17l-5-5"></path></svg>
+      <span class="save-label">Save Changes</span>
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+  <span id="toastMsg">Profile updated!</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const ILLUSTRATIONS = ['avatar-1.png','avatar-2.png','avatar-3.png','avatar-4.png','avatar-5.png'];
+const ILLUSTRATION_PATH = 'assets/avatars/';
+const AVATAR_BUCKET = 'avatars';           // Supabase storage bucket name
+const PROFILE_CACHE_KEY = 'sketchquest_profile_cache';
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;  // 2MB
+
+let session = null;
+let username = 'Artist';
+
+/* saved = last confirmed-persisted state. current = what's shown/edited now. */
+let saved = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null };
+let current = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null };
+
+/* pending upload only exists locally until Save is pressed */
+let pendingUploadBlob = null;   // Blob to upload on save
+let pendingPreviewUrl = null;   // local object URL for instant preview
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function pickRandomIllustration(){
+  return ILLUSTRATIONS[Math.floor(Math.random() * ILLUSTRATIONS.length)];
+}
+
+function cacheProfile(p){
+  try{ localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(p)); }catch(e){}
+}
+function loadCachedProfile(){
+  try{ return JSON.parse(localStorage.getItem(PROFILE_CACHE_KEY) || 'null'); }catch(e){ return null; }
+}
+
+/* Avatar priority: uploaded pic > selected illustration > first letter of username.
+   Reusable everywhere in the app (nav badge, this page, etc). */
+function avatarSrcFor(profile){
+  if(profile.avatar_type === 'upload' && (pendingPreviewUrl || profile.avatar_url)){
+    return { kind:'img', src: pendingPreviewUrl || profile.avatar_url };
+  }
+  if(profile.avatar_type === 'illustration' && profile.avatar_illustration){
+    return { kind:'img', src: ILLUSTRATION_PATH + profile.avatar_illustration };
+  }
+  return { kind:'letter', letter: (username || '?').charAt(0).toUpperCase() };
+}
+
+function renderAvatarPreview(){
+  const el = document.getElementById('avatarPreview');
+  const info = avatarSrcFor(current);
+  el.innerHTML = '';
+  if(info.kind === 'img'){
+    el.style.background = '#fff';
+    const img = document.createElement('img');
+    img.src = info.src;
+    img.alt = 'avatar preview';
+    el.appendChild(img);
+  } else {
+    el.style.background = 'var(--yellow)';
+    el.textContent = info.letter;
+  }
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+}
+
+function isDirty(){
+  if(current.avatar_type !== saved.avatar_type) return true;
+  if(current.avatar_type === 'illustration'){
+    return current.avatar_illustration !== saved.avatar_illustration;
+  }
+  if(current.avatar_type === 'upload'){
+    // a newly-picked (uncommitted) file always counts as dirty
+    if(pendingUploadBlob) return true;
+    return current.avatar_url !== saved.avatar_url;
+  }
+  return false;
+}
+
+function refreshDirtyState(){
+  const bar = document.getElementById('actionBar');
+  if(isDirty()) bar.classList.add('show');
+  else bar.classList.remove('show');
+}
+
+function renderIllusGrid(){
+  const grid = document.getElementById('illusGrid');
+  grid.innerHTML = '';
+  ILLUSTRATIONS.forEach(function(file){
+    const item = document.createElement('div');
+    item.className = 'illus-item';
+    if(current.avatar_type === 'illustration' && current.avatar_illustration === file){
+      item.classList.add('selected');
+    }
+    item.innerHTML = '<img src="' + ILLUSTRATION_PATH + file + '" alt="avatar option">' +
+      '<div class="illus-check"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"></path></svg></div>';
+    item.addEventListener('click', function(){
+      current.avatar_type = 'illustration';
+      current.avatar_illustration = file;
+      // clear any pending upload preview - illustration takes over
+      if(pendingPreviewUrl){ URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
+      pendingUploadBlob = null;
+      renderIllusGrid();
+      renderAvatarPreview();
+      refreshDirtyState();
+    });
+    grid.appendChild(item);
+  });
+}
+
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function(){ toast.classList.remove('show'); }, 2400);
+}
+
+/* ============================================================
+   INIT / LOAD PROFILE
+   ============================================================ */
+(async () => {
+  const { data: { session: s } } = await supabaseClient.auth.getSession();
+  if(!s){ window.location.href = 'login.html'; return; }
+  session = s;
+  username = session.user.user_metadata?.username || session.user.user_metadata?.display_name || 'Artist';
+  document.getElementById('pname').textContent = username;
+
+  // paint instantly from cache to avoid a flash of "no avatar"
+  const cached = loadCachedProfile();
+  if(cached){ saved = Object.assign({}, saved, cached); current = Object.assign({}, saved); }
+  renderIllusGrid();
+  renderAvatarPreview();
+
+  let { data: row, error } = await supabaseClient
+    .from('profiles')
+    .select('avatar_type, avatar_illustration, avatar_url')
+    .eq('id', session.user.id)
+    .single();
+
+  if(error || !row){
+    // brand-new account with no profile row yet: assign a random illustration
+    const chosen = pickRandomIllustration();
+    const insertPayload = { id: session.user.id, avatar_type: 'illustration', avatar_illustration: chosen, avatar_url: null };
+    await supabaseClient.from('profiles').upsert(insertPayload);
+    row = insertPayload;
+  }
+
+  saved = { avatar_type: row.avatar_type || 'illustration', avatar_illustration: row.avatar_illustration || ILLUSTRATIONS[0], avatar_url: row.avatar_url || null };
+  current = Object.assign({}, saved);
+  cacheProfile(saved);
+
+  renderIllusGrid();
+  renderAvatarPreview();
+  refreshDirtyState();
+})();
+
+/* ============================================================
+   UPLOAD FLOW
+   ============================================================ */
+const uploadZone = document.getElementById('uploadZone');
+const uploadInput = document.getElementById('uploadInput');
+const uploadError = document.getElementById('uploadError');
+
+uploadZone.addEventListener('click', function(){ uploadInput.click(); });
+uploadInput.addEventListener('change', function(e){
+  const file = e.target.files[0];
+  uploadInput.value = '';
+  if(!file) return;
+  uploadError.classList.remove('show');
+
+  const okTypes = ['image/jpeg','image/png','image/webp'];
+  if(!okTypes.includes(file.type)){
+    uploadError.textContent = 'Please choose a JPG, PNG or WebP image.';
+    uploadError.classList.add('show');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev){ openCropModal(ev.target.result); };
+  reader.readAsDataURL(file);
+});
+
+/* ---- simple canvas cropper: drag to pan, slider to zoom, always square ---- */
+let cropImg = new Image();
+let cropOffset = { x: 0, y: 0 };
+let cropScale = 1;
+let dragging = false;
+let dragStart = { x: 0, y: 0 };
+const STAGE_SIZE = 260;
+
+function openCropModal(dataUrl){
+  cropImg = new Image();
+  cropImg.onload = function(){
+    cropScale = 1;
+    cropOffset = { x: 0, y: 0 };
+    document.getElementById('zoomRange').value = 100;
+    document.getElementById('cropOverlay').classList.add('show');
+    drawCrop();
+  };
+  cropImg.src = dataUrl;
+}
+
+function drawCrop(){
+  const canvas = document.getElementById('cropCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = STAGE_SIZE; canvas.height = STAGE_SIZE;
+  ctx.clearRect(0,0,STAGE_SIZE,STAGE_SIZE);
+
+  const iw = cropImg.width, ih = cropImg.height;
+  const baseScale = Math.max(STAGE_SIZE / iw, STAGE_SIZE / ih);
+  const scale = baseScale * cropScale;
+  const dw = iw * scale, dh = ih * scale;
+  const dx = (STAGE_SIZE - dw) / 2 + cropOffset.x;
+  const dy = (STAGE_SIZE - dh) / 2 + cropOffset.y;
+
+  ctx.drawImage(cropImg, dx, dy, dw, dh);
+}
+
+const cropStage = document.getElementById('cropStage');
+function ptFromEvent(e){
+  if(e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
+}
+cropStage.addEventListener('mousedown', startDrag);
+cropStage.addEventListener('touchstart', startDrag, { passive:true });
+function startDrag(e){ dragging = true; dragStart = ptFromEvent(e); }
+window.addEventListener('mousemove', onDrag);
+window.addEventListener('touchmove', onDrag, { passive:true });
+function onDrag(e){
+  if(!dragging) return;
+  const p = ptFromEvent(e);
+  cropOffset.x += (p.x - dragStart.x);
+  cropOffset.y += (p.y - dragStart.y);
+  dragStart = p;
+  drawCrop();
+}
+window.addEventListener('mouseup', function(){ dragging = false; });
+window.addEventListener('touchend', function(){ dragging = false; });
+
+document.getElementById('zoomRange').addEventListener('input', function(e){
+  cropScale = Number(e.target.value) / 100;
+  drawCrop();
+});
+
+document.getElementById('cropCancel').addEventListener('click', function(){
+  document.getElementById('cropOverlay').classList.remove('show');
+});
+
+document.getElementById('cropConfirm').addEventListener('click', function(){
+  const canvas = document.getElementById('cropCanvas');
+  canvas.toBlob(function(blob){
+    if(!blob) return;
+    compressAndStage(blob);
+    document.getElementById('cropOverlay').classList.remove('show');
+  }, 'image/jpeg', 0.92);
+});
+
+/* compress to keep under MAX_UPLOAD_BYTES, then stage as a live preview (not saved yet) */
+function compressAndStage(blob){
+  let quality = 0.9;
+  const attempt = function(q){
+    const canvas = document.getElementById('cropCanvas');
+    canvas.toBlob(function(out){
+      if(!out) return;
+      if(out.size > MAX_UPLOAD_BYTES && q > 0.4){
+        attempt(q - 0.1);
+        return;
+      }
+      if(out.size > MAX_UPLOAD_BYTES){
+        uploadError.textContent = 'Image is too large even after compression. Try a smaller photo.';
+        uploadError.classList.add('show');
+        return;
+      }
+      // stage it as pending — preview updates instantly, upload happens on Save
+      if(pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+      pendingUploadBlob = out;
+      pendingPreviewUrl = URL.createObjectURL(out);
+      current.avatar_type = 'upload';
+      renderIllusGrid();
+      renderAvatarPreview();
+      refreshDirtyState();
+    }, 'image/jpeg', q);
+  };
+  attempt(quality);
+}
+
+/* ============================================================
+   SAVE / DISCARD
+   ============================================================ */
+document.getElementById('saveBtn').addEventListener('click', async function(){
+  const btn = this;
+  if(!isDirty() || btn.classList.contains('loading')) return;
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  const spinner = document.getElementById('avatarSpinner');
+  spinner.classList.add('show');
+
+  const prevSaved = Object.assign({}, saved); // for rollback on failure
+
+  try{
+    let finalPayload = null;
+
+    if(current.avatar_type === 'upload' && pendingUploadBlob){
+      const path = session.user.id + '/avatar-' + Date.now() + '.jpg';
+      const { error: upErr } = await supabaseClient.storage
+        .from(AVATAR_BUCKET)
+        .upload(path, pendingUploadBlob, { contentType: 'image/jpeg', upsert: true });
+      if(upErr) throw upErr;
+
+      const { data: pub } = supabaseClient.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+      finalPayload = { avatar_type: 'upload', avatar_illustration: null, avatar_url: pub.publicUrl };
+    } else if(current.avatar_type === 'illustration'){
+      finalPayload = { avatar_type: 'illustration', avatar_illustration: current.avatar_illustration, avatar_url: null };
+    } else {
+      finalPayload = Object.assign({}, current);
+    }
+
+    const { error: dbErr } = await supabaseClient
+      .from('profiles')
+      .update(finalPayload)
+      .eq('id', session.user.id);
+    if(dbErr) throw dbErr;
+
+    // success: commit state
+    saved = finalPayload;
+    current = Object.assign({}, saved);
+    if(pendingPreviewUrl){ URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
+    pendingUploadBlob = null;
+
+    cacheProfile(saved);
+    renderIllusGrid();
+    renderAvatarPreview();
+    refreshDirtyState();
+    showToast('Profile updated!');
+  } catch(err){
+    // restore previous saved image on failure
+    saved = prevSaved;
+    current = Object.assign({}, saved);
+    if(pendingPreviewUrl){ URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
+    pendingUploadBlob = null;
+    renderIllusGrid();
+    renderAvatarPreview();
+    refreshDirtyState();
+    showToast("Couldn't save — try again");
+    console.error(err);
+  } finally {
+    spinner.classList.remove('show');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('discardBtn').addEventListener('click', function(){
+  current = Object.assign({}, saved);
+  if(pendingPreviewUrl){ URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
+  pendingUploadBlob = null;
+  uploadError.classList.remove('show');
+  renderIllusGrid();
+  renderAvatarPreview();
+  refreshDirtyState();
+});
+
+document.getElementById('backBtn').addEventListener('click', function(){
+  window.location.href = 'home.html';
+});
+</script>
+</body>
+</html>
