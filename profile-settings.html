@@ -70,11 +70,11 @@ body{
 /* ---- banner (matches unit-banner style) ---- */
 .profile-banner{
   position:relative;
-  background:var(--blue);
+  background:linear-gradient(155deg, #5B8FEF 0%, var(--blue) 55%, #2F5BB8 100%);
   border:3px solid var(--ink);
   border-radius:var(--radius-md);
   box-shadow:0 var(--shadow-off) 0 var(--ink);
-  padding:28px 20px 24px;
+  padding:32px 20px 26px;
   margin-bottom:28px;
   color:var(--white);
   overflow:hidden;
@@ -86,11 +86,20 @@ body{
 .profile-banner::before{
   content:'';
   position:absolute;
-  width:180px; height:180px;
-  background:var(--coral);
+  width:200px; height:200px;
+  background:radial-gradient(circle at 35% 35%, #FF8A97, var(--coral) 70%);
   border-radius:50%;
-  top:-100px; right:-70px;
-  opacity:.9;
+  top:-110px; right:-80px;
+  opacity:.85;
+}
+.profile-banner::after{
+  content:'';
+  position:absolute;
+  width:90px; height:90px;
+  background:radial-gradient(circle at 35% 35%, #FFF08A, var(--yellow) 70%);
+  border-radius:50%;
+  bottom:-50px; left:-30px;
+  opacity:.55;
 }
 
 .avatar-preview-wrap{
@@ -135,7 +144,7 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  z-index:2;
+  z-index:4;
   padding:0;
   transition:transform .08s ease, box-shadow .08s ease;
 }
@@ -162,6 +171,201 @@ body{
 }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 
+/* ---- avatar decoration overlay (sits on top of the picture, never
+   clipped by the picture's own circular overflow) ---- */
+.avatar-deco-layer{
+  position:absolute;
+  inset:-22%;
+  pointer-events:none;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.avatar-deco-layer img{
+  width:100%; height:100%;
+  object-fit:contain;
+}
+.avatar-deco-layer.pop{ animation:decoPop .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes decoPop{
+  0%{ transform:scale(.5) rotate(-8deg); opacity:0; }
+  60%{ transform:scale(1.12) rotate(3deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0); }
+}
+
+/* ---- pencil choice popup ---- */
+.picker-modal{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 8px 0 var(--ink);
+  padding:22px;
+  width:100%;
+  max-width:340px;
+  animation:popupIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+.picker-modal h3{ font-family:'Baloo 2',sans-serif; font-size:17px; margin:0 0 16px; text-align:center; }
+.picker-choice-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px;
+  margin-bottom:12px;
+  background:var(--cream);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:0 4px 0 var(--ink);
+  cursor:pointer;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:15px;
+  color:var(--ink);
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease;
+}
+.picker-choice-btn:last-child{ margin-bottom:0; }
+.picker-choice-btn:hover{ background:#FFF6DC; }
+.picker-choice-btn:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+.picker-choice-btn .picker-icon{
+  width:44px; height:44px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.picker-choice-btn .picker-icon svg{ width:22px; height:22px; }
+.picker-choice-btn.deco-choice .picker-icon{ background:var(--blue); }
+.picker-choice-btn.deco-choice .picker-icon svg{ stroke:var(--white); }
+
+/* ---- decoration shop modal ---- */
+.deco-modal{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 8px 0 var(--ink);
+  padding:22px;
+  width:100%;
+  max-width:420px;
+  max-height:86vh;
+  overflow-y:auto;
+  animation:popupIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+.deco-modal h3{ font-family:'Baloo 2',sans-serif; font-size:17px; margin:0 0 16px; text-align:center; }
+.deco-preview-wrap{
+  position:relative;
+  width:140px; height:140px;
+  margin:0 auto 20px;
+}
+.deco-preview-avatar{
+  width:140px; height:140px;
+  border-radius:50%;
+  border:4px solid var(--ink);
+  background:var(--yellow);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:52px;
+  font-weight:800;
+}
+.deco-preview-avatar img{ width:100%; height:100%; object-fit:cover; }
+.deco-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+  gap:14px;
+}
+.deco-card{
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  padding:16px 14px 14px;
+  text-align:center;
+  background:linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%);
+  box-shadow:0 4px 0 var(--ink);
+  transition:transform .12s ease, box-shadow .12s ease;
+  position:relative;
+  overflow:hidden;
+}
+.deco-card:hover{ transform:translateY(-2px); }
+.deco-card.is-equipped{
+  background:linear-gradient(180deg, #F3FBE9 0%, #E9F7D8 100%);
+  border-color:var(--green);
+}
+.deco-card-preview{
+  position:relative;
+  width:72px; height:72px;
+  margin:0 auto 10px;
+}
+.deco-card-preview .deco-card-avatar{
+  width:72px; height:72px;
+  border-radius:50%;
+  background:var(--lockgray);
+  border:3px solid var(--ink);
+}
+.deco-card-preview img{
+  position:absolute;
+  inset:-20%;
+  width:140%; height:140%;
+  object-fit:contain;
+  pointer-events:none;
+}
+.deco-card p.deco-name{ font-weight:800; font-size:14px; margin:0 0 6px; }
+.deco-card p.deco-price{
+  font-size:12px;
+  font-weight:800;
+  color:#A9722E;
+  margin:0 0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  background:linear-gradient(180deg, #FFEBB0, #FFDA7A);
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:3px 10px;
+}
+.deco-buy-btn{
+  width:100%;
+  padding:10px;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:13px;
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  background:linear-gradient(180deg, #FF7B89, var(--coral));
+  color:var(--white);
+  box-shadow:0 3px 0 var(--ink);
+  cursor:pointer;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.deco-buy-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 0 0 var(--ink); }
+.deco-buy-btn.owned{ background:linear-gradient(180deg, #FFFFFF, #F5F1E6); color:var(--ink); }
+.deco-buy-btn.equipped{
+  background:linear-gradient(180deg, #A6E465, var(--green));
+  color:var(--ink);
+  cursor:default;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.deco-buy-btn:disabled:not(.equipped){ background:var(--lockgray); color:var(--gray); cursor:not-allowed; box-shadow:0 3px 0 #C2BBA9; }
+.deco-close-btn{
+  display:block;
+  width:100%;
+  margin-top:18px;
+  padding:12px;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:14px;
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  background:var(--white);
+  color:var(--ink);
+  box-shadow:0 4px 0 var(--ink);
+  cursor:pointer;
+}
+.deco-close-btn:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+
 .profile-banner .uname{
   position:relative; z-index:1;
   font-family:'Baloo 2',sans-serif;
@@ -179,17 +383,28 @@ body{
 
 /* ---- section card ---- */
 .card{
-  background:var(--white);
+  background:linear-gradient(180deg, #FFFFFF 0%, #FFFDF6 100%);
   border:3px solid var(--ink);
   border-radius:var(--radius-md);
   box-shadow:0 var(--shadow-off) 0 var(--ink);
-  padding:20px;
+  padding:22px 20px;
   margin-bottom:22px;
+  position:relative;
 }
 .card h2{
   font-family:'Baloo 2',sans-serif;
-  font-size:16px;
+  font-size:17px;
   margin:0 0 4px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.card h2::before{
+  content:'';
+  width:8px; height:8px;
+  border-radius:50%;
+  background:var(--coral);
+  flex-shrink:0;
 }
 .card .card-sub{
   font-size:12.5px;
@@ -443,7 +658,8 @@ body{
     <div class="avatar-preview-wrap">
       <div class="avatar-preview" id="avatarPreview">?</div>
       <div class="avatar-spinner" id="avatarSpinner"><div class="spin"></div></div>
-      <button class="avatar-edit-btn" id="uploadZone" type="button" aria-label="Upload custom photo">
+      <div class="avatar-deco-layer" id="avatarDecoLayer"></div>
+      <button class="avatar-edit-btn" id="openPencilModal" type="button" aria-label="Edit profile picture and decoration">
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 20h9"></path>
           <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
@@ -457,8 +673,6 @@ body{
   <div class="card">
     <h2>Choose an illustration</h2>
     <p class="card-sub">Pick one of your 5 default avatars</p>
-    <div class="illus-grid" id="illusGrid"></div>
-  </div>
     <div class="illus-grid" id="illusGrid"></div>
     <input type="file" id="uploadInput" class="upload-input" accept="image/jpeg,image/png,image/webp">
     <p class="upload-error" id="uploadError"></p>
@@ -483,6 +697,45 @@ body{
   </div>
 </div>
 
+<!-- pencil choice modal -->
+<div class="modal-overlay" id="pencilChoiceOverlay">
+  <div class="picker-modal">
+    <h3>Customize your avatar</h3>
+    <button type="button" class="picker-choice-btn" id="choicePictureBtn">
+      <span class="picker-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <circle cx="8.5" cy="10" r="1.6"></circle>
+          <path d="M21 16l-5-5-6 6"></path>
+        </svg>
+      </span>
+      Change Profile Picture
+    </button>
+    <button type="button" class="picker-choice-btn deco-choice" id="choiceDecoBtn">
+      <span class="picker-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--white)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <circle cx="12" cy="12" r="4"></circle>
+        </svg>
+      </span>
+      Change Profile Decoration
+    </button>
+  </div>
+</div>
+
+<!-- decoration shop modal -->
+<div class="modal-overlay" id="decoOverlay">
+  <div class="deco-modal">
+    <h3>Avatar Decorations</h3>
+    <div class="deco-preview-wrap">
+      <div class="deco-preview-avatar" id="decoPreviewAvatar"></div>
+      <div class="avatar-deco-layer" id="decoPreviewLayer"></div>
+    </div>
+    <div class="deco-grid" id="decoGrid"></div>
+    <button type="button" class="deco-close-btn" id="decoCloseBtn">Close</button>
+  </div>
+</div>
+
 <!-- sticky save/discard bar -->
 <div class="action-bar" id="actionBar">
   <div class="action-bar-inner">
@@ -502,7 +755,11 @@ body{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="decorations-config.js"></script>
 <script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
 /* ============================================================
    CONFIG
    ============================================================ */
@@ -516,9 +773,14 @@ let session = null;
 let username = 'Artist';
 
 /* saved = last confirmed-persisted state. current = what's shown/edited now. */
-let saved = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null };
-let current = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null };
+let saved = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null, decoration_equipped: null };
+let current = { avatar_type: 'illustration', avatar_illustration: ILLUSTRATIONS[0], avatar_url: null, decoration_equipped: null };
 
+/* ---- decoration shop state — equip/purchase save immediately and don't
+   go through the picture Save/Discard flow, same as the coin balance ---- */
+const DECORATIONS = window.DECORATIONS || [];
+let ownedDecorations = [];
+let coins = 0;
 /* pending upload only exists locally until Save is pressed */
 let pendingUploadBlob = null;   // Blob to upload on save
 let pendingPreviewUrl = null;   // local object URL for instant preview
@@ -549,6 +811,17 @@ function avatarSrcFor(profile){
   return { kind:'letter', letter: (username || '?').charAt(0).toUpperCase() };
 }
 
+function renderDecoLayer(el, decoId){
+  el.innerHTML = '';
+  if(!decoId) return;
+  const deco = DECORATIONS.find(d => d.id === decoId);
+  if(!deco) return;
+  const img = document.createElement('img');
+  img.src = deco.image;
+  img.alt = deco.name;
+  el.appendChild(img);
+}
+
 function renderAvatarPreview(){
   const el = document.getElementById('avatarPreview');
   const info = avatarSrcFor(current);
@@ -566,6 +839,7 @@ function renderAvatarPreview(){
   el.classList.remove('pulse');
   void el.offsetWidth;
   el.classList.add('pulse');
+  renderDecoLayer(document.getElementById('avatarDecoLayer'), current.decoration_equipped);
 }
 
 function isDirty(){
@@ -637,35 +911,51 @@ function showToast(msg){
 
   let { data: row, error } = await supabaseClient
     .from('profiles')
-    .select('avatar_type, avatar_illustration, avatar_url')
+    .select('avatar_type, avatar_illustration, avatar_url, decoration_equipped, decorations_owned, coins')
     .eq('id', session.user.id)
     .single();
 
   if(error || !row){
     // brand-new account with no profile row yet: assign a random illustration
     const chosen = pickRandomIllustration();
-    const insertPayload = { id: session.user.id, avatar_type: 'illustration', avatar_illustration: chosen, avatar_url: null };
+    const insertPayload = { id: session.user.id, avatar_type: 'illustration', avatar_illustration: chosen, avatar_url: null, decoration_equipped: null, decorations_owned: [], coins: 0 };
     await supabaseClient.from('profiles').upsert(insertPayload);
     row = insertPayload;
   }
 
-  saved = { avatar_type: row.avatar_type || 'illustration', avatar_illustration: row.avatar_illustration || ILLUSTRATIONS[0], avatar_url: row.avatar_url || null };
+  saved = { avatar_type: row.avatar_type || 'illustration', avatar_illustration: row.avatar_illustration || ILLUSTRATIONS[0], avatar_url: row.avatar_url || null, decoration_equipped: row.decoration_equipped || null };
   current = Object.assign({}, saved);
-  cacheProfile(saved);
+  ownedDecorations = row.decorations_owned || [];
+  coins = typeof row.coins === 'number' ? row.coins : 0;
+  cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
 
   renderIllusGrid();
   renderAvatarPreview();
   refreshDirtyState();
 })();
-
 /* ============================================================
    UPLOAD FLOW
    ============================================================ */
-const uploadZone = document.getElementById('uploadZone');
 const uploadInput = document.getElementById('uploadInput');
 const uploadError = document.getElementById('uploadError');
 
-uploadZone.addEventListener('click', function(){ uploadInput.click(); });
+/* pencil opens a choice popup — picture upload and decoration shop are
+   two separate flows now, same crop/upload code as before under the hood */
+const pencilChoiceOverlay = document.getElementById('pencilChoiceOverlay');
+document.getElementById('openPencilModal').addEventListener('click', function(){
+  pencilChoiceOverlay.classList.add('show');
+});
+document.getElementById('choicePictureBtn').addEventListener('click', function(){
+  pencilChoiceOverlay.classList.remove('show');
+  uploadInput.click();
+});
+document.getElementById('choiceDecoBtn').addEventListener('click', function(){
+  pencilChoiceOverlay.classList.remove('show');
+  openDecoShop();
+});
+pencilChoiceOverlay.addEventListener('click', function(e){
+  if(e.target === pencilChoiceOverlay) pencilChoiceOverlay.classList.remove('show');
+});
 uploadInput.addEventListener('change', function(e){
   const file = e.target.files[0];
   uploadInput.value = '';
@@ -867,6 +1157,130 @@ document.getElementById('discardBtn').addEventListener('click', function(){
 document.getElementById('backBtn').addEventListener('click', function(){
   window.location.href = 'home.html';
 });
+
+/* ============================================================
+   DECORATION SHOP
+   ============================================================ */
+const decoOverlay = document.getElementById('decoOverlay');
+const decoGrid = document.getElementById('decoGrid');
+
+function openDecoShop(){
+  renderDecoPreview();
+  renderDecoGrid();
+  decoOverlay.classList.add('show');
+}
+document.getElementById('decoCloseBtn').addEventListener('click', function(){
+  decoOverlay.classList.remove('show');
+});
+decoOverlay.addEventListener('click', function(e){
+  if(e.target === decoOverlay) decoOverlay.classList.remove('show');
+});
+
+function renderDecoPreview(){
+  const avatarEl = document.getElementById('decoPreviewAvatar');
+  const info = avatarSrcFor(current);
+  avatarEl.innerHTML = '';
+  if(info.kind === 'img'){
+    avatarEl.style.background = '#fff';
+    const img = document.createElement('img');
+    img.src = info.src;
+    img.alt = 'avatar preview';
+    img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+    avatarEl.appendChild(img);
+  } else {
+    avatarEl.style.background = 'var(--yellow)';
+    avatarEl.textContent = info.letter;
+  }
+  renderDecoLayer(document.getElementById('decoPreviewLayer'), current.decoration_equipped);
+}
+
+function renderDecoGrid(){
+  decoGrid.innerHTML = '';
+  DECORATIONS.forEach(function(deco){
+    const owned = ownedDecorations.includes(deco.id);
+    const equipped = current.decoration_equipped === deco.id;
+    const canAfford = coins >= deco.price;
+
+    let btnLabel = 'Buy', btnClass = '', btnDisabled = false;
+    if(equipped){ btnLabel = 'Equipped'; btnClass = 'equipped'; btnDisabled = true; }
+    else if(owned){ btnLabel = 'Equip'; btnClass = 'owned'; }
+    else if(!canAfford){ btnLabel = 'Not enough coins'; btnDisabled = true; }
+
+    const card = document.createElement('div');
+    card.className = 'deco-card';
+    card.innerHTML =
+      '<div class="deco-card-preview">' +
+        '<div class="deco-card-avatar"></div>' +
+        '<img src="' + deco.image + '" alt="' + deco.name + '">' +
+      '</div>' +
+      '<p class="deco-name">' + deco.name + '</p>' +
+      '<p class="deco-price">🪙 ' + deco.price + ' Coins</p>' +
+      '<button type="button" class="deco-buy-btn ' + btnClass + '"' + (btnDisabled ? ' disabled' : '') + '>' + btnLabel + '</button>';
+
+    card.querySelector('.deco-buy-btn').addEventListener('click', function(){
+      if(equipped) return;
+      if(owned) equipDecoration(deco);
+      else purchaseDecoration(deco);
+    });
+
+    decoGrid.appendChild(card);
+  });
+}
+
+async function purchaseDecoration(deco){
+  if(coins < deco.price){ showToast('Not enough coins'); return; }
+  try{
+    const { data: row, error } = await supabaseClient
+      .rpc('purchase_decoration', { p_deco_id: deco.id })
+      .single();
+    if(error) throw error;
+
+    // trust the server's numbers, not anything computed client-side
+    coins = row.coins;
+    ownedDecorations = row.decorations_owned || [];
+    saved.decoration_equipped = row.decoration_equipped;
+    current.decoration_equipped = row.decoration_equipped;
+    cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
+
+    renderDecoPreview();
+    renderDecoGrid();
+    renderAvatarPreview();
+    pulseDeco();
+    showToast('Decoration purchased and equipped!');
+  } catch(err){
+    console.error(err);
+    showToast(err.message === 'Not enough coins' ? 'Not enough coins' : "Couldn't complete purchase — try again");
+  }
+}
+async function equipDecoration(deco){
+  try{
+    const { data: row, error } = await supabaseClient
+      .rpc('equip_decoration', { p_deco_id: deco.id })
+      .single();
+    if(error) throw error;
+
+    saved.decoration_equipped = row.decoration_equipped;
+    current.decoration_equipped = row.decoration_equipped;
+    cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
+
+    renderDecoPreview();
+    renderDecoGrid();
+    renderAvatarPreview();
+    pulseDeco();
+    showToast('Decoration equipped!');
+  } catch(err){
+    console.error(err);
+    showToast("Couldn't equip — try again");
+  }
+}
+
+function pulseDeco(){
+  const layer = document.getElementById('avatarDecoLayer');
+  layer.classList.remove('pop');
+  void layer.offsetWidth;
+  layer.classList.add('pop');
+}
+
 </script>
 </body>
 </html>
