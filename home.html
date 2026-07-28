@@ -60,7 +60,9 @@
   color:var(--ink);
 }
 .user-badge .avatar{
-  width:28px; height:28px;
+  position:relative;
+  overflow:visible;
+  width:36px; height:36px;
   border-radius:50%;
   background:var(--yellow);
   border:2px solid var(--ink);
@@ -68,6 +70,16 @@
   align-items:center;
   justify-content:center;
   font-size:13px;
+}
+.user-badge .avatar-deco-layer{
+  position:absolute;
+  inset:-45%;
+  pointer-events:none;
+  z-index:2;
+}
+.user-badge .avatar-deco-layer img{
+  width:100%; height:100%;
+  object-fit:contain;
 }
 
 /* stats badge: coins + hearts, sits top-left below the profile badge
@@ -671,6 +683,7 @@ body{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="decorations-config.js"></script>
 <script>
 const LESSON_ORDER = ['lesson1','lesson2','lesson3','lesson4','lesson5','lesson6','lesson7','lesson8'];
 const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
@@ -697,6 +710,20 @@ function renderAvatarInto(el, profile, username){
     el.style.background = 'var(--yellow)';
     el.textContent = (username || '?').charAt(0).toUpperCase();
   }
+
+  // decoration renders in its own overlay layer so the badge's own
+  // circular clipping never cuts it off
+  var decoLayer = document.createElement('div');
+  decoLayer.className = 'avatar-deco-layer';
+  var decoId = profile && profile.decoration_equipped;
+  var deco = decoId && window.DECORATIONS ? window.DECORATIONS.find(function(d){ return d.id === decoId; }) : null;
+  if(deco){
+    var decoImg = document.createElement('img');
+    decoImg.src = deco.image;
+    decoImg.alt = deco.name;
+    decoLayer.appendChild(decoImg);
+  }
+  el.appendChild(decoLayer);
 }
 
 function renderStats(profile){
@@ -781,7 +808,7 @@ function cacheProfile(p){
   const [{ data: profileRow }, { data: rows, error }] = await Promise.all([
     supabaseClient
       .from('profiles')
-      .select('avatar_type, avatar_illustration, avatar_url, coins, hearts')
+      .select('avatar_type, avatar_illustration, avatar_url, coins, hearts, decoration_equipped')
       .eq('id', session.user.id)
       .single(),
     supabaseClient
@@ -839,6 +866,12 @@ document.querySelectorAll('.path').forEach(function(pathEl){
     var btnIcon = isLocked
       ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>'
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"></path></svg>';
+    // a completed lesson opened via "Review" gets ?review=1 so the lesson
+    // page knows to let the user replay it without re-triggering rewards,
+    // heart loss, or the completion redirect
+    var btnHref = node.dataset.href
+      ? node.dataset.href + (isDone ? '?review=1' : '')
+      : '';
 
     var popup = document.createElement('div');
     popup.className = 'lesson-popup';
@@ -848,7 +881,7 @@ document.querySelectorAll('.path').forEach(function(pathEl){
       '<p class="popup-sub">' + (node.dataset.sub || '') + '</p>' +
       '<button type="button" class="popup-start"' +
         (isLocked ? ' disabled' : '') +
-        (node.dataset.href ? ' data-href="' + node.dataset.href + '"' : '') +
+        (btnHref ? ' data-href="' + btnHref + '"' : '') +
         '>' + btnIcon + ' ' + btnLabel + '</button>';
     wrap.appendChild(popup);
     /* locked lessons stay preview-only: the button is disabled and carries
