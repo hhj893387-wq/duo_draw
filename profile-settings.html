@@ -175,7 +175,7 @@ body{
    clipped by the picture's own circular overflow) ---- */
 .avatar-deco-layer{
   position:absolute;
-  inset:-22%;
+  inset: calc((1 - var(--deco-scale, 1.44)) * 50%);
   pointer-events:none;
   z-index:3;
   display:flex;
@@ -191,6 +191,15 @@ body{
   0%{ transform:scale(.5) rotate(-8deg); opacity:0; }
   60%{ transform:scale(1.12) rotate(3deg); opacity:1; }
   100%{ transform:scale(1) rotate(0); }
+}
+
+/* ---- decoration shop: avatar pulse + equip success flourish ---- */
+/* ---- decoration shop: avatar pulse on open/select/success ---- */
+.deco-detail-avatar-img.pulse,
+.deco-detail-avatar-letter.pulse,
+.deco-detail-avatar-img.equip-flash,
+.deco-detail-avatar-letter.equip-flash{
+  animation:avatarPulse .4s cubic-bezier(.34,1.56,.64,1);
 }
 
 /* ---- pencil choice popup ---- */
@@ -241,131 +250,261 @@ body{
 .picker-choice-btn.deco-choice .picker-icon svg{ stroke:var(--white); }
 
 /* ---- decoration shop modal ---- */
+/* ---- decoration shop modal ---- */
 .deco-modal{
+  position:relative;
   background:var(--white);
   border:3px solid var(--ink);
   border-radius:var(--radius-md);
   box-shadow:0 8px 0 var(--ink);
-  padding:22px;
-  width:100%;
-  max-width:420px;
-  max-height:86vh;
-  overflow-y:auto;
+  padding:32px 36px;
+  width:75vw;
+  max-width:900px;
+  height:75vh;
+  max-height:820px;
+  min-height:420px;
+  display:flex;
+  flex-direction:column;
   animation:popupIn .2s cubic-bezier(.34,1.56,.64,1);
 }
-.deco-modal h3{ font-family:'Baloo 2',sans-serif; font-size:17px; margin:0 0 16px; text-align:center; }
-.deco-preview-wrap{
-  position:relative;
-  width:140px; height:140px;
-  margin:0 auto 20px;
+.deco-modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:22px;
+  padding-right:44px;
+  flex-shrink:0;
 }
-.deco-preview-avatar{
-  width:140px; height:140px;
+.deco-modal-header h3{
+  margin:0;
+  text-align:left;
+  font-size:22px;
+}
+.deco-coin-balance{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:14px;
+  font-weight:800;
+  color:#A9722E;
+  background:#FFDA7A;
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:7px 16px;
+  width:fit-content;
+  flex-shrink:0;
+  margin:0;
+}
+
+@media (max-width:640px){
+  .deco-modal{
+    width:94vw;
+    height:88vh;
+    max-height:none;
+    padding:22px 18px;
+  }
+  .deco-modal-header h3{ font-size:18px; }
+}
+/* ---- two-column shop layout: detail panel + scrollable list ---- */
+/* ---- two-column shop layout: detail panel + scrollable list ---- */
+.deco-shop-layout{
+  display:flex;
+  gap:28px;
+  align-items:stretch;
+  flex:1;
+  min-height:0;
+}
+.deco-divider{
+  width:3px;
+  background:var(--lockgray);
+  border-radius:2px;
+  flex-shrink:0;
+}
+
+/* -- left: detail panel -- */
+.deco-detail-panel{
+  flex:0 0 200px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.deco-detail-avatar-wrap{
+  position:relative;
+  width:144px; height:144px;
+  margin:4px auto 20px;
+}
+.deco-detail-avatar-img,
+.deco-detail-avatar-letter{
+  width:100%; height:100%;
   border-radius:50%;
   border:4px solid var(--ink);
-  background:var(--yellow);
-  overflow:hidden;
+  box-shadow:0 4px 0 var(--ink);
+  object-fit:cover;
+  display:block;
+}
+.deco-detail-avatar-letter{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:52px;
+  background:var(--yellow);
+  font-size:48px;
   font-weight:800;
+  color:var(--ink);
 }
-.deco-preview-avatar img{ width:100%; height:100%; object-fit:cover; }
-.deco-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
-  gap:14px;
-}
-.deco-card{
-  border:3px solid var(--ink);
-  border-radius:var(--radius-md);
-  padding:16px 14px 14px;
-  text-align:center;
-  background:linear-gradient(180deg, #FFFFFF 0%, var(--cream) 100%);
-  box-shadow:0 4px 0 var(--ink);
-  transition:transform .12s ease, box-shadow .12s ease;
-  position:relative;
-  overflow:hidden;
-}
-.deco-card:hover{ transform:translateY(-2px); }
-.deco-card.is-equipped{
-  background:linear-gradient(180deg, #F3FBE9 0%, #E9F7D8 100%);
-  border-color:var(--green);
-}
-.deco-card-preview{
-  position:relative;
-  width:72px; height:72px;
-  margin:0 auto 10px;
-}
-.deco-card-preview .deco-card-avatar{
-  width:72px; height:72px;
-  border-radius:50%;
-  background:var(--lockgray);
-  border:3px solid var(--ink);
-}
-.deco-card-preview img{
-  position:absolute;
-  inset:-20%;
-  width:140%; height:140%;
-  object-fit:contain;
-  pointer-events:none;
-}
-.deco-card p.deco-name{ font-weight:800; font-size:14px; margin:0 0 6px; }
-.deco-card p.deco-price{
-  font-size:12px;
+.deco-detail-name{ font-weight:800; font-size:18px; margin:0 0 6px; }
+.deco-detail-desc{ font-size:13px; font-weight:700; color:var(--gray); margin:0 0 14px; line-height:1.4; }
+.deco-detail-price{
+  font-size:14px;
   font-weight:800;
   color:#A9722E;
-  margin:0 0 12px;
+  margin:0 0 18px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:4px;
-  background:linear-gradient(180deg, #FFEBB0, #FFDA7A);
+  background:#FFDA7A;
   border:2px solid var(--ink);
   border-radius:999px;
-  padding:3px 10px;
+  padding:6px 14px;
+  width:fit-content;
 }
+
+/* -- right: decoration list -- */
+.deco-list{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:16px;
+  align-content:start;
+  max-height:none;
+  overflow-y:auto;
+  padding:4px 6px 4px 0;
+}
+
+@media (min-width:641px) and (max-width:900px){
+  .deco-list{ grid-template-columns:repeat(2, 1fr); }
+  .deco-detail-panel{ flex:0 0 170px; }
+}
+
+@media (max-width:640px){
+  .deco-shop-layout{ flex-direction:column; gap:18px; }
+  .deco-divider{ width:100%; height:3px; }
+  .deco-detail-panel{ flex:0 0 auto; }
+  .deco-detail-avatar-wrap{ width:104px; height:104px; }
+  .deco-detail-avatar-letter{ font-size:36px; }
+  .deco-list{ grid-template-columns:repeat(2, 1fr); }
+}
+.deco-list-item{
+  position:relative;
+  border:3px solid var(--ink);
+  border-radius:16px;
+  padding:14px 10px 12px;
+  text-align:center;
+  background:var(--white);
+  box-shadow:0 3px 0 var(--ink);
+  cursor:pointer;
+  transition:transform .1s ease, box-shadow .1s ease, background .12s ease;
+}
+.deco-list-item:hover{ transform:translateY(-2px); }
+.deco-list-item.selected{
+  border-color:var(--blue);
+  background:#EEF3FF;
+}
+.deco-list-item.is-equipped{
+  border-color:var(--green);
+  background:#F3FBE9;
+}
+.deco-mini-badge{
+  position:absolute;
+  top:-6px; right:-6px;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:var(--green);
+  border:2px solid var(--ink);
+  color:var(--white);
+  font-size:11px;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.deco-list-item-avatar{
+  position:relative;
+  width:56px; height:56px;
+  margin:4px auto 10px;
+}
+.deco-mini-base{
+  width:100%; height:100%;
+  border-radius:50%;
+  border:2px solid var(--ink);
+  object-fit:cover;
+  display:block;
+}
+.deco-mini-letter{
+  width:100%; height:100%;
+  border-radius:50%;
+  border:2px solid var(--ink);
+  background:var(--yellow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  font-size:20px;
+}
+.deco-list-item-name{ font-weight:800; font-size:13px; margin:0; line-height:1.25; }
 .deco-buy-btn{
   width:100%;
-  padding:10px;
+  padding:13px;
   font-family:'Baloo 2',sans-serif;
   font-weight:800;
-  font-size:13px;
+  font-size:15px;
   border:3px solid var(--ink);
   border-radius:var(--radius-sm);
-  background:linear-gradient(180deg, #FF7B89, var(--coral));
+  background:var(--coral);
   color:var(--white);
   box-shadow:0 3px 0 var(--ink);
   cursor:pointer;
   transition:transform .08s ease, box-shadow .08s ease;
 }
 .deco-buy-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 0 0 var(--ink); }
+.deco-buy-btn.owned{ background:#F5F1E6; color:var(--ink); }
+.deco-buy-btn.equipped{
+  background:var(--green);
+  color:var(--ink);
+  cursor:pointer;
+}
+.deco-buy-btn:disabled:not(.equipped){ background:var(--lockgray); color:var(--gray); cursor:not-allowed; box-shadow:0 3px 0 #C2BBA9; }
+.deco-buy-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 0 0 var(--ink); }
 .deco-buy-btn.owned{ background:linear-gradient(180deg, #FFFFFF, #F5F1E6); color:var(--ink); }
 .deco-buy-btn.equipped{
   background:linear-gradient(180deg, #A6E465, var(--green));
   color:var(--ink);
-  cursor:default;
-  display:flex; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer;
+}
+.deco-buy-btn.equipped:hover{
+  background:linear-gradient(180deg, #B6EE78, #9EDB58);
 }
 .deco-buy-btn:disabled:not(.equipped){ background:var(--lockgray); color:var(--gray); cursor:not-allowed; box-shadow:0 3px 0 #C2BBA9; }
 .deco-close-btn{
-  display:block;
-  width:100%;
-  margin-top:18px;
-  padding:12px;
-  font-family:'Baloo 2',sans-serif;
-  font-weight:800;
-  font-size:14px;
-  border:3px solid var(--ink);
-  border-radius:var(--radius-sm);
+  position:absolute;
+  top:14px; right:14px;
+  width:36px; height:36px;
+  border-radius:50%;
   background:var(--white);
-  color:var(--ink);
-  box-shadow:0 4px 0 var(--ink);
+  border:3px solid var(--ink);
+  box-shadow:0 3px 0 var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
+  padding:0;
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease;
 }
-.deco-close-btn:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
-
+.deco-close-btn:hover{ background:#FFF6DC; }
+.deco-close-btn:active{ transform:translateY(3px); box-shadow:0 0 0 var(--ink); }
+.deco-close-btn svg{ width:18px; height:18px; }
 .profile-banner .uname{
   position:relative; z-index:1;
   font-family:'Baloo 2',sans-serif;
@@ -724,18 +863,32 @@ body{
 </div>
 
 <!-- decoration shop modal -->
+<!-- decoration shop modal -->
 <div class="modal-overlay" id="decoOverlay">
   <div class="deco-modal">
-    <h3>Avatar Decorations</h3>
-    <div class="deco-preview-wrap">
-      <div class="deco-preview-avatar" id="decoPreviewAvatar"></div>
-      <div class="avatar-deco-layer" id="decoPreviewLayer"></div>
+    <div class="deco-modal-header">
+      <h3>Avatar Decorations</h3>
+      <div class="deco-coin-balance">🪙 <span id="decoCoinAmt">0</span> Coins</div>
     </div>
-    <div class="deco-grid" id="decoGrid"></div>
-    <button type="button" class="deco-close-btn" id="decoCloseBtn">Close</button>
+    <div class="deco-shop-layout">
+      <div class="deco-detail-panel">
+        <div class="deco-detail-avatar-wrap" id="decoDetailAvatarWrap"></div>
+        <p class="deco-detail-name" id="decoDetailName">Select a decoration</p>
+        <p class="deco-detail-desc" id="decoDetailDesc"></p>
+        <p class="deco-detail-price" id="decoDetailPrice"></p>
+        <button type="button" class="deco-buy-btn" id="decoDetailActionBtn">Buy</button>
+      </div>
+      <div class="deco-divider"></div>
+      <div class="deco-list" id="decoGrid"></div>
+    </div>
+    <button type="button" class="deco-close-btn" id="decoCloseBtn" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9.5"></circle>
+        <path d="M9 9l6 6M15 9l-6 6"></path>
+      </svg>
+    </button>
   </div>
 </div>
-
 <!-- sticky save/discard bar -->
 <div class="action-bar" id="actionBar">
   <div class="action-bar-inner">
@@ -813,13 +966,23 @@ function avatarSrcFor(profile){
 
 function renderDecoLayer(el, decoId){
   el.innerHTML = '';
+  el.style.removeProperty('--deco-scale');
   if(!decoId) return;
   const deco = DECORATIONS.find(d => d.id === decoId);
   if(!deco) return;
+  if(deco.scale) el.style.setProperty('--deco-scale', deco.scale);
   const img = document.createElement('img');
   img.src = deco.image;
   img.alt = deco.name;
   el.appendChild(img);
+}
+
+function pulseDeco(){
+  const el = document.getElementById('avatarDecoLayer');
+  if(!el) return;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
 }
 
 function renderAvatarPreview(){
@@ -1109,14 +1272,16 @@ document.getElementById('saveBtn').addEventListener('click', async function(){
       finalPayload = Object.assign({}, current);
     }
 
-    const { error: dbErr } = await supabaseClient
+   const { error: dbErr } = await supabaseClient
       .from('profiles')
       .update(finalPayload)
       .eq('id', session.user.id);
     if(dbErr) throw dbErr;
 
-    // success: commit state
-    saved = finalPayload;
+    // success: commit state — carry decoration_equipped forward since
+    // finalPayload never touches that column (it's only ever changed
+    // through the equip/purchase RPCs)
+    saved = Object.assign({}, finalPayload, { decoration_equipped: current.decoration_equipped });
     current = Object.assign({}, saved);
     if(pendingPreviewUrl){ URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
     pendingUploadBlob = null;
@@ -1163,10 +1328,21 @@ document.getElementById('backBtn').addEventListener('click', function(){
    ============================================================ */
 const decoOverlay = document.getElementById('decoOverlay');
 const decoGrid = document.getElementById('decoGrid');
+let selectedDecoId = null; // which decoration is showing in the detail panel
 
+function updateDecoCoinDisplay(){
+  const amt = document.getElementById('decoCoinAmt');
+  if(amt) amt.textContent = coins;
+}
 function openDecoShop(){
-  renderDecoPreview();
+  if(!selectedDecoId){
+    selectedDecoId = current.decoration_equipped || (DECORATIONS[0] && DECORATIONS[0].id) || null;
+  }
   renderDecoGrid();
+  renderDecoDetail('open');
+  renderAvatarPreview();
+  pulseDeco(); // bounce the main profile decoration in sync with the shop preview
+  updateDecoCoinDisplay();
   decoOverlay.classList.add('show');
 }
 document.getElementById('decoCloseBtn').addEventListener('click', function(){
@@ -1176,54 +1352,94 @@ decoOverlay.addEventListener('click', function(e){
   if(e.target === decoOverlay) decoOverlay.classList.remove('show');
 });
 
-function renderDecoPreview(){
-  const avatarEl = document.getElementById('decoPreviewAvatar');
-  const info = avatarSrcFor(current);
-  avatarEl.innerHTML = '';
-  if(info.kind === 'img'){
-    avatarEl.style.background = '#fff';
-    const img = document.createElement('img');
-    img.src = info.src;
-    img.alt = 'avatar preview';
-    img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
-    avatarEl.appendChild(img);
-  } else {
-    avatarEl.style.background = 'var(--yellow)';
-    avatarEl.textContent = info.letter;
-  }
-  renderDecoLayer(document.getElementById('decoPreviewLayer'), current.decoration_equipped);
-}
+/* left panel: big preview of the user's real avatar with the selected deco applied */
+function renderDecoDetail(mode){
+  mode = mode || 'select';
+  const deco = DECORATIONS.find(d => d.id === selectedDecoId) || null;
+  const wrap = document.getElementById('decoDetailAvatarWrap');
+  const avatarInfo = avatarSrcFor(current);
+  const avatarAnimClass = mode === 'success' ? 'equip-flash' : (mode === 'open' ? 'pulse' : '');
 
+  wrap.innerHTML = (avatarInfo.kind === 'img'
+    ? '<img class="deco-detail-avatar-img ' + avatarAnimClass + '" src="' + avatarInfo.src + '" alt="your avatar">'
+    : '<div class="deco-detail-avatar-letter ' + avatarAnimClass + '">' + avatarInfo.letter + '</div>'
+  ) + '<div class="avatar-deco-layer pop" id="decoDetailLayer"></div>';
+  renderDecoLayer(document.getElementById('decoDetailLayer'), deco ? deco.id : null);
+
+  const nameEl = document.getElementById('decoDetailName');
+  const descEl = document.getElementById('decoDetailDesc');
+  const priceEl = document.getElementById('decoDetailPrice');
+  const btn = document.getElementById('decoDetailActionBtn');
+
+  if(!deco){
+    nameEl.textContent = 'Select a decoration';
+    descEl.textContent = '';
+    priceEl.textContent = '';
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.style.display = '';
+  nameEl.textContent = deco.name;
+  descEl.textContent = deco.description || '';
+  descEl.style.display = deco.description ? '' : 'none';
+
+  const owned = ownedDecorations.includes(deco.id);
+  const equipped = current.decoration_equipped === deco.id;
+  const canAfford = coins >= deco.price;
+
+  priceEl.innerHTML = deco.price > 0 ? '🪙 ' + deco.price + ' Coins' : 'Free';
+
+btn.className = 'deco-buy-btn';
+  btn.disabled = false;
+  if(equipped){
+    btn.textContent = 'Unequip'; btn.classList.add('equipped');
+  } else if(owned){
+    btn.textContent = 'Equip'; btn.classList.add('owned');
+  } else if(!canAfford){
+    btn.textContent = 'Not enough coins'; btn.disabled = true;
+  } else {
+    btn.textContent = 'Buy';
+  }
+}
+document.getElementById('decoDetailActionBtn').addEventListener('click', function(){
+  const deco = DECORATIONS.find(d => d.id === selectedDecoId);
+  if(!deco) return;
+  const owned = ownedDecorations.includes(deco.id);
+  const equipped = current.decoration_equipped === deco.id;
+  if(equipped){ unequipDecoration(); return; }
+  if(owned) equipDecoration(deco);
+  else purchaseDecoration(deco);
+});
+/* right list: thumbnails also use the user's real avatar, not a placeholder */
 function renderDecoGrid(){
   decoGrid.innerHTML = '';
+  const avatarInfo = avatarSrcFor(current);
+
   DECORATIONS.forEach(function(deco){
     const owned = ownedDecorations.includes(deco.id);
     const equipped = current.decoration_equipped === deco.id;
-    const canAfford = coins >= deco.price;
+    const selected = selectedDecoId === deco.id;
 
-    let btnLabel = 'Buy', btnClass = '', btnDisabled = false;
-    if(equipped){ btnLabel = 'Equipped'; btnClass = 'equipped'; btnDisabled = true; }
-    else if(owned){ btnLabel = 'Equip'; btnClass = 'owned'; }
-    else if(!canAfford){ btnLabel = 'Not enough coins'; btnDisabled = true; }
-
-    const card = document.createElement('div');
-    card.className = 'deco-card';
-    card.innerHTML =
-      '<div class="deco-card-preview">' +
-        '<div class="deco-card-avatar"></div>' +
-        '<img src="' + deco.image + '" alt="' + deco.name + '">' +
+    const item = document.createElement('div');
+    item.className = 'deco-list-item' + (selected ? ' selected' : '') + (equipped ? ' is-equipped' : (owned ? ' is-owned' : ''));
+    item.innerHTML =
+      (equipped ? '<span class="deco-mini-badge">✓</span>' : '') +
+      '<div class="deco-list-item-avatar">' +
+        (avatarInfo.kind === 'img'
+          ? '<img class="deco-mini-base" src="' + avatarInfo.src + '" alt="your avatar">'
+          : '<div class="deco-mini-letter">' + avatarInfo.letter + '</div>') +
+        '<div class="avatar-deco-layer deco-mini-layer" style="' + (deco.scale ? '--deco-scale:' + deco.scale + ';' : '') + '"><img src="' + deco.image + '" alt="' + deco.name + '"></div>' +
       '</div>' +
-      '<p class="deco-name">' + deco.name + '</p>' +
-      '<p class="deco-price">🪙 ' + deco.price + ' Coins</p>' +
-      '<button type="button" class="deco-buy-btn ' + btnClass + '"' + (btnDisabled ? ' disabled' : '') + '>' + btnLabel + '</button>';
+      '<p class="deco-list-item-name">' + deco.name + '</p>';
 
-    card.querySelector('.deco-buy-btn').addEventListener('click', function(){
-      if(equipped) return;
-      if(owned) equipDecoration(deco);
-      else purchaseDecoration(deco);
+    item.addEventListener('click', function(){
+      selectedDecoId = deco.id;
+      renderDecoGrid();
+      renderDecoDetail('select');
     });
 
-    decoGrid.appendChild(card);
+    decoGrid.appendChild(item);
   });
 }
 
@@ -1235,16 +1451,16 @@ async function purchaseDecoration(deco){
       .single();
     if(error) throw error;
 
-    // trust the server's numbers, not anything computed client-side
     coins = row.coins;
     ownedDecorations = row.decorations_owned || [];
     saved.decoration_equipped = row.decoration_equipped;
     current.decoration_equipped = row.decoration_equipped;
     cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
 
-    renderDecoPreview();
-    renderDecoGrid();
+   renderDecoGrid();
+    renderDecoDetail('success');
     renderAvatarPreview();
+    updateDecoCoinDisplay();
     pulseDeco();
     showToast('Decoration purchased and equipped!');
   } catch(err){
@@ -1263,8 +1479,8 @@ async function equipDecoration(deco){
     current.decoration_equipped = row.decoration_equipped;
     cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
 
-    renderDecoPreview();
-    renderDecoGrid();
+   renderDecoGrid();
+    renderDecoDetail('success');
     renderAvatarPreview();
     pulseDeco();
     showToast('Decoration equipped!');
@@ -1274,11 +1490,25 @@ async function equipDecoration(deco){
   }
 }
 
-function pulseDeco(){
-  const layer = document.getElementById('avatarDecoLayer');
-  layer.classList.remove('pop');
-  void layer.offsetWidth;
-  layer.classList.add('pop');
+async function unequipDecoration(){
+  try{
+    const { data: row, error } = await supabaseClient
+      .rpc('equip_decoration', { p_deco_id: null })
+      .single();
+    if(error) throw error;
+
+    saved.decoration_equipped = row.decoration_equipped;
+    current.decoration_equipped = row.decoration_equipped;
+    cacheProfile(Object.assign({}, saved, { decorations_owned: ownedDecorations, coins: coins }));
+
+    renderDecoGrid();
+    renderDecoDetail();
+    renderAvatarPreview();
+    showToast('Decoration removed');
+  } catch(err){
+    console.error(err);
+    showToast("remove");
+  }
 }
 
 </script>
