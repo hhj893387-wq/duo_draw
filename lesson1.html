@@ -1038,9 +1038,9 @@ nextBtn.addEventListener('click', ()=>{
   nextBtn.disabled = true;
 
   feedbackOverlay.classList.remove('show');
-  let xp = parseInt(nextBtn.dataset.xp || 10, 10);
-  let coins = parseInt(nextBtn.dataset.coins || 5, 10);
-  const isCombo = nextBtn.dataset.combo === '1';
+  let xp = isReviewMode ? 0 : parseInt(nextBtn.dataset.xp || 10, 10);
+  let coins = isReviewMode ? 0 : parseInt(nextBtn.dataset.coins || 5, 10);
+  const isCombo = !isReviewMode && nextBtn.dataset.combo === '1';
   if(isCombo){
     xp += 10;
     coins += 5;
@@ -1048,7 +1048,9 @@ nextBtn.addEventListener('click', ()=>{
   }
   totalXp += xp;
   totalCoins += coins;
-  showToast(xp, coins, isCombo);
+  if(!isReviewMode){
+    showToast(xp, coins, isCombo);
+  }
   addCoins(coins);
 
   if(roundIndex === rounds.length-1){
@@ -1125,6 +1127,11 @@ const HEART_REGEN_MS = 5 * 60 * 1000; // 5 minutes per heart
 let currentUserId = null;
 let saveQueued = false;
 
+// ?review=1 means the user tapped "Review" on an already-completed lesson.
+// In this mode: no redirect on completed status, no heart cost, no
+// XP/coin rewards, and progress is never written back to Supabase —
+// it's purely a practice replay of a lesson they've already finished.
+const isReviewMode = new URLSearchParams(window.location.search).get('review') === '1';
 let hearts = HEART_MAX;
 let heartsUpdatedAt = new Date().toISOString();
 let totalCoinsSaved = 0; // authoritative coin total from profiles table
@@ -1154,6 +1161,7 @@ function cacheProfileState(state){
 }
 
 async function persistProgress(patch){
+  if(isReviewMode) return; // review runs never touch saved progress
   const entry = upsertLocalEntry(patch); // instant local save, works offline
   if(!currentUserId){ saveQueued = true; return; }
   try{
@@ -1215,6 +1223,7 @@ function startHeartTimer(){
 }
 
 function loseHeart(){
+  if(isReviewMode) return; // review mode never costs hearts
   regenHearts();
   if(hearts > 0){
     const wasFull = hearts >= HEART_MAX;
@@ -1237,6 +1246,7 @@ async function saveProfileState(){
 }
 
 async function addCoins(amount){
+  if(isReviewMode) return; // review mode never pays out coins
   totalCoinsSaved += amount;
   await saveProfileState();
 }
@@ -1270,11 +1280,12 @@ async function initProgress(){
   if(!session){ window.location.href = 'login.html'; return; }
   currentUserId = session.user.id;
 
-  const cached = loadCachedProgress()[LESSON_ID];
-  if(cached && cached.completed){ window.location.href = 'home.html'; return; }
-  if(cached && cached.current_round > 0){
+const cached = loadCachedProgress()[LESSON_ID];
+  if(cached && cached.completed && !isReviewMode){ window.location.href = 'home.html'; return; }
+  if(cached && cached.current_round > 0 && !isReviewMode){
     roundIndex = Math.min(cached.current_round, rounds.length - 1);
   }
+  // review mode always starts from round 1, regardless of saved progress
 
   // paint instantly from cache, then reconcile with Supabase
   const cachedProfile = loadCachedProfileState();
@@ -1298,8 +1309,10 @@ async function initProgress(){
 
   if(!error && data){
     upsertLocalEntry(data);
-    if(data.completed){ window.location.href = 'roadmap.html'; return; }
-    roundIndex = Math.min(data.current_round || 0, rounds.length - 1);
+    if(data.completed && !isReviewMode){ window.location.href = 'home.html'; return; }
+    if(!isReviewMode){
+      roundIndex = Math.min(data.current_round || 0, rounds.length - 1);
+    }
   }
 
   if(!profileError && profileRow && (profileRow.hearts !== null && profileRow.hearts !== undefined)){
