@@ -101,6 +101,22 @@ p,span,button{ font-family:'Nunito',sans-serif; }
   margin-bottom:clamp(2px,.7vh,6px);
   flex-shrink:0;
 }
+
+.heart-display{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-shrink:0;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:clamp(13px,2vh,16px);
+  color:var(--ink);
+}
+.heart-display svg{
+  width:clamp(20px,3vh,26px);
+  height:clamp(20px,3vh,26px);
+  flex-shrink:0;
+}
 .round-title{
   text-align:center;
   font-size:clamp(16px,2.6vh,24px);
@@ -455,6 +471,16 @@ p,span,button{ font-family:'Nunito',sans-serif; }
       </svg>
     </button>
     <div class="progress-track" id="progressTrack"></div>
+    <div class="heart-display">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M41.68 9.21999C40.6585 8.198 39.4456 7.38728 38.1107 6.83416C36.7758 6.28103 35.345 5.99634 33.9 5.99634C32.455 5.99634 31.0242 6.28103 29.6893 6.83416C28.3544 7.38728 27.1415 8.198 26.12 9.21999L24 11.34L21.88 9.21999C19.8166 7.15661 17.0181 5.99741 14.1 5.99741C11.1819 5.99741 8.38338 7.15661 6.31999 9.21999C4.25661 11.2834 3.09741 14.0819 3.09741 17C3.09741 19.9181 4.25661 22.7166 6.31999 24.78L24 42.46L41.68 24.78C42.702 23.7585 43.5127 22.5456 44.0658 21.2107C44.6189 19.8758 44.9036 18.445 44.9036 17C44.9036 15.555 44.6189 14.1242 44.0658 12.7893C43.5127 11.4544 42.702 10.2415 41.68 9.21999Z" fill="black" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M39.9434 9.21999C38.9644 8.198 37.8021 7.38728 36.5228 6.83416C35.2435 6.28103 33.8723 5.99634 32.4875 5.99634C31.1028 5.99634 29.7316 6.28103 28.4523 6.83416C27.173 7.38728 26.0106 8.198 25.0317 9.21999L23 11.34L20.9684 9.21999C18.9909 7.15661 16.309 5.99741 13.5125 5.99741C10.716 5.99741 8.0341 7.15661 6.05669 9.21999C4.07928 11.2834 2.96838 14.0819 2.96838 17C2.96838 19.9181 4.07928 22.7166 6.05669 24.78L23 42.46L39.9434 24.78C40.9228 23.7585 41.6997 22.5456 42.2298 21.2107C42.7599 19.8758 43.0327 18.445 43.0327 17C43.0327 15.555 42.7599 14.1242 42.2298 12.7893C41.6997 11.4544 40.9228 10.2415 39.9434 9.21999Z" fill="#FF383C" stroke="#FF383C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="14" r="4" fill="white"/>
+        <circle cx="18" cy="17" r="2" fill="white"/>
+        <circle cx="15" cy="19" r="1" fill="white"/>
+      </svg>
+      <span id="heartCountDisplay">5</span>
+    </div>
   </div>
 
   <div class="round-label" id="roundLabel">Lesson 3 of 6</div>
@@ -631,6 +657,12 @@ const tips = [
   'Picture the finish point as a target and aim straight for it.'
 ];
 
+const excellentPhrases = ['Excellent!', 'Line wizard!', 'Chef\'s kiss!', 'Steady hands!', 'Nailed it!'];
+const goodPhrases = ['Good!', 'Nice control!', 'Getting sharper!', 'Solid line!', 'You\'ve got this!'];
+const nearMissPhrases = ['So close!', 'Almost there!', 'Just a hair off!'];
+
+let comboStreak = 0; // consecutive "excellent" rounds this lesson — resets on any non-excellent
+
 let roundIndex = 0;
 let attemptsThisRound = 0;
 let totalXp = 0;
@@ -678,6 +710,25 @@ const ICONS = {
   thumb:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11M2 13v7a2 2 0 0 0 2 2h12.6a2 2 0 0 0 2-1.6l1.3-6A2 2 0 0 0 18 12h-5l1-5.5A1.5 1.5 0 0 0 12.6 4.8L7 11"></path></svg>',
   refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"></path><path d="M20 5v6h-6"></path></svg>'
 };
+
+/* ---------------- idle nudges ---------------- */
+const idleNudges = [
+  'Take your time — even artists warm up first ✏️',
+  'Psst… try starting from the green dot',
+  'No rush! Precision beats speed here'
+];
+let idleTimer = null;
+function resetIdleTimer(){
+  clearInterval(idleTimer);
+  if(hasDrawn || hearts <= 0) return;
+  let idleIndex = 0;
+  idleTimer = setInterval(()=>{
+    hintPill.textContent = idleNudges[idleIndex % idleNudges.length];
+    idleIndex++;
+  }, 8000);
+}
+
+
 
 /* ---------------- setup canvas ---------------- */
 function sizeCanvases(){
@@ -737,6 +788,8 @@ function clearDraw(){
   currentStroke = [];
   hasDrawn = false;
   checkBtn.disabled = true;
+  hintPill.textContent = 'Draw over the dashed line with your finger or mouse';
+  resetIdleTimer();
 }
 
 /* ---------------- drawing input ---------------- */
@@ -749,6 +802,7 @@ function getPos(e){
 
 function startDraw(e){
   e.preventDefault();
+  clearInterval(idleTimer); // stop nudging once they've actually started
   drawing = true;
   currentStroke = [];
   const [x,y] = getPos(e);
@@ -925,12 +979,11 @@ function updateHeader(){
   roundLabel.textContent = 'Line ' + (roundIndex+1) + ' of ' + rounds.length;
   roundTitle.textContent = rounds[roundIndex].title;
 }
-
-function showToast(xp, coins){
-  toastXp.textContent = '+' + xp + ' XP';
+function showToast(xp, coins, isCombo){
+  toastXp.textContent = (isCombo ? '🔥 Combo! +' : '+') + xp + ' XP';
   toastCoin.textContent = '+' + coins;
   toast.classList.add('show');
-  setTimeout(()=> toast.classList.remove('show'), 1400);
+  setTimeout(()=> toast.classList.remove('show'), isCombo ? 2200 : 1400);
 }
 
 checkBtn.addEventListener('click', ()=>{
@@ -939,31 +992,42 @@ checkBtn.addEventListener('click', ()=>{
   feedbackScore.textContent = score;
 
   if(score >= 85){
+    comboStreak++;
     feedbackIcon.className = 'feedback-icon excellent';
     feedbackIcon.innerHTML = ICONS.star;
-    feedbackTitle.textContent = 'Excellent!';
+    feedbackTitle.textContent = excellentPhrases[Math.floor(Math.random()*excellentPhrases.length)];
     nextBtnLabel.textContent = roundIndex === rounds.length-1 ? 'Finish' : 'Continue';
     feedbackOverlay.classList.add('show');
     nextBtn.dataset.result = 'pass';
     nextBtn.dataset.xp = 15;
     nextBtn.dataset.coins = 8;
+    nextBtn.dataset.combo = comboStreak >= 3 ? '1' : '0';
   } else if(score >= 60){
+    comboStreak = 0;
     feedbackIcon.className = 'feedback-icon good';
     feedbackIcon.innerHTML = ICONS.thumb;
-    feedbackTitle.textContent = 'Good!';
+    feedbackTitle.textContent = goodPhrases[Math.floor(Math.random()*goodPhrases.length)];
     nextBtnLabel.textContent = roundIndex === rounds.length-1 ? 'Finish' : 'Continue';
     feedbackOverlay.classList.add('show');
     nextBtn.dataset.result = 'pass';
     nextBtn.dataset.xp = 10;
     nextBtn.dataset.coins = 5;
+    nextBtn.dataset.combo = '0';
   } else {
+    comboStreak = 0;
     attemptsThisRound++;
     const tipIndex = (roundIndex + attemptsThisRound) % tips.length;
     failureTip.textContent = tips[tipIndex];
-    failureSub.textContent = attemptsThisRound > 1
-      ? 'Still a little off the guide — that\'s okay, straight lines take practice.'
-      : 'Your line wandered a bit off the guide. Take your time on the next try.';
+    if(score >= 45){
+      const near = nearMissPhrases[Math.floor(Math.random()*nearMissPhrases.length)];
+      failureSub.textContent = near + ' You were only a few points off — keep the stroke steady and try again.';
+    } else {
+      failureSub.textContent = attemptsThisRound > 1
+        ? 'Still a little off the guide — that\'s okay, straight lines take practice.'
+        : 'Your line wandered a bit off the guide. Take your time on the next try.';
+    }
     failureOverlay.classList.add('show');
+    loseHeart();
   }
 });
 let advancing = false; // guards against double-fire on fast double-tap/click
@@ -974,11 +1038,18 @@ nextBtn.addEventListener('click', ()=>{
   nextBtn.disabled = true;
 
   feedbackOverlay.classList.remove('show');
-  const xp = parseInt(nextBtn.dataset.xp || 10, 10);
-  const coins = parseInt(nextBtn.dataset.coins || 5, 10);
+  let xp = parseInt(nextBtn.dataset.xp || 10, 10);
+  let coins = parseInt(nextBtn.dataset.coins || 5, 10);
+  const isCombo = nextBtn.dataset.combo === '1';
+  if(isCombo){
+    xp += 10;
+    coins += 5;
+    comboStreak = 0; // pay out once, then restart the streak count
+  }
   totalXp += xp;
   totalCoins += coins;
-  showToast(xp, coins);
+  showToast(xp, coins, isCombo);
+  addCoins(coins);
 
   if(roundIndex === rounds.length-1){
     persistProgress({ completed:true, xp:totalXp, coins:totalCoins, current_round:roundIndex });
@@ -1044,11 +1115,20 @@ document.getElementById('exitBtn').addEventListener('click', ()=>{
   window.location.href = 'home.html';
 });
 /* ---------------- progress sync ---------------- */
+/* ---------------- progress sync ---------------- */
 const LESSON_ID = 'lesson1';   // change to lesson1, lesson2, ... per file
 const UNIT_ID = 'unit1';       // change to unit2 for lessons 6-8
 const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
+const PROFILE_STATE_KEY = 'sketchquest_profile_state';
+const HEART_MAX = 5;
+const HEART_REGEN_MS = 5 * 60 * 1000; // 5 minutes per heart
 let currentUserId = null;
 let saveQueued = false;
+
+let hearts = HEART_MAX;
+let heartsUpdatedAt = new Date().toISOString();
+let totalCoinsSaved = 0; // authoritative coin total from profiles table
+let heartTimerInterval = null;
 
 function loadCachedProgress(){
   try{ return JSON.parse(localStorage.getItem(PROGRESS_CACHE_KEY) || '{}'); }
@@ -1063,6 +1143,14 @@ function upsertLocalEntry(patch){
   map[LESSON_ID] = Object.assign({}, existing, patch);
   cacheProgress(map);
   return map[LESSON_ID];
+}
+
+function loadCachedProfileState(){
+  try{ return JSON.parse(localStorage.getItem(PROFILE_STATE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProfileState(state){
+  try{ localStorage.setItem(PROFILE_STATE_KEY, JSON.stringify(state)); } catch(e){}
 }
 
 async function persistProgress(patch){
@@ -1084,19 +1172,95 @@ async function persistProgress(patch){
   }
 }
 
+/* ---- hearts ---- */
+function regenHearts(){
+  const elapsed = Date.now() - new Date(heartsUpdatedAt).getTime();
+  if(hearts >= HEART_MAX || elapsed <= 0) return;
+  const gained = Math.floor(elapsed / HEART_REGEN_MS);
+  if(gained > 0){
+    hearts = Math.min(HEART_MAX, hearts + gained);
+    // advance the anchor time by only the whole hearts consumed, so partial
+    // progress toward the next heart isn't lost
+    heartsUpdatedAt = new Date(new Date(heartsUpdatedAt).getTime() + gained * HEART_REGEN_MS).toISOString();
+  }
+}
+
+function updateHeartUI(){
+  regenHearts();
+  const heartCountEl = document.getElementById('heartCountDisplay');
+  if(heartCountEl) heartCountEl.textContent = hearts;
+
+  if(hearts <= 0){
+    checkBtn.disabled = true;
+    drawCanvas.style.pointerEvents = 'none';
+    clearInterval(idleTimer); // don't let idle nudges fight the countdown text
+    const remaining = HEART_REGEN_MS - (Date.now() - new Date(heartsUpdatedAt).getTime());
+    const mins = Math.max(0, Math.floor(remaining / 60000));
+    const secs = Math.max(0, Math.floor((remaining % 60000) / 1000));
+    hintPill.textContent = 'Out of hearts — next heart in ' + mins + ':' + String(secs).padStart(2,'0');
+  } else {
+    drawCanvas.style.pointerEvents = 'auto';
+    checkBtn.disabled = !hasDrawn;
+    if(hintPill.textContent.indexOf('Out of hearts') === 0){
+      hintPill.textContent = 'Draw over the dashed line with your finger or mouse';
+    }
+  }
+  saveProfileState();
+}
+
+function startHeartTimer(){
+  if(heartTimerInterval) clearInterval(heartTimerInterval);
+  heartTimerInterval = setInterval(updateHeartUI, 1000);
+  updateHeartUI();
+}
+
+function loseHeart(){
+  regenHearts();
+  if(hearts > 0){
+    const wasFull = hearts >= HEART_MAX;
+    hearts = Math.max(0, hearts - 1);
+    if(wasFull) heartsUpdatedAt = new Date().toISOString(); // start the regen clock
+    updateHeartUI();
+  }
+}
+
+async function saveProfileState(){
+  cacheProfileState({ hearts, hearts_updated_at: heartsUpdatedAt, coins: totalCoinsSaved });
+  if(!currentUserId) return;
+  try{
+    await supabaseClient.from('profiles').update({
+      hearts: hearts,
+      hearts_updated_at: heartsUpdatedAt,
+      coins: totalCoinsSaved
+    }).eq('id', currentUserId);
+  } catch(e){ /* best effort, cached locally */ }
+}
+
+async function addCoins(amount){
+  totalCoinsSaved += amount;
+  await saveProfileState();
+}
+
 function saveOnExitOrRefresh(){
   if(!currentUserId) return;
   const entry = loadCachedProgress()[LESSON_ID];
-  if(!entry) return;
-  const payload = JSON.stringify({
-    user_id: currentUserId, lesson_id: LESSON_ID, unit_id: UNIT_ID,
-    completed: entry.completed, xp: entry.xp, coins: entry.coins,
-    current_round: entry.current_round, updated_at: new Date().toISOString()
-  });
+  if(entry){
+    const payload = JSON.stringify({
+      user_id: currentUserId, lesson_id: LESSON_ID, unit_id: UNIT_ID,
+      completed: entry.completed, xp: entry.xp, coins: entry.coins,
+      current_round: entry.current_round, updated_at: new Date().toISOString()
+    });
+    try{
+      navigator.sendBeacon(
+        SUPABASE_URL + '/rest/v1/lesson_progress?on_conflict=user_id,lesson_id',
+        new Blob([payload], { type:'application/json' })
+      );
+    } catch(e){ /* best effort */ }
+  }
   try{
     navigator.sendBeacon(
-      SUPABASE_URL + '/rest/v1/lesson_progress?on_conflict=user_id,lesson_id',
-      new Blob([payload], { type:'application/json' })
+      SUPABASE_URL + '/rest/v1/profiles?id=eq.' + currentUserId,
+      new Blob([JSON.stringify({ hearts, hearts_updated_at: heartsUpdatedAt, coins: totalCoinsSaved })], { type:'application/json' })
     );
   } catch(e){ /* best effort */ }
 }
@@ -1112,12 +1276,25 @@ async function initProgress(){
     roundIndex = Math.min(cached.current_round, rounds.length - 1);
   }
 
-  const { data, error } = await supabaseClient
-    .from('lesson_progress')
-    .select('completed, xp, coins, current_round')
-    .eq('user_id', currentUserId)
-    .eq('lesson_id', LESSON_ID)
-    .maybeSingle();
+  // paint instantly from cache, then reconcile with Supabase
+  const cachedProfile = loadCachedProfileState();
+  if(typeof cachedProfile.hearts === 'number') hearts = cachedProfile.hearts;
+  if(cachedProfile.hearts_updated_at) heartsUpdatedAt = cachedProfile.hearts_updated_at;
+  if(typeof cachedProfile.coins === 'number') totalCoinsSaved = cachedProfile.coins;
+
+  const [{ data, error }, { data: profileRow, error: profileError }] = await Promise.all([
+    supabaseClient
+      .from('lesson_progress')
+      .select('completed, xp, coins, current_round')
+      .eq('user_id', currentUserId)
+      .eq('lesson_id', LESSON_ID)
+      .maybeSingle(),
+    supabaseClient
+      .from('profiles')
+      .select('hearts, hearts_updated_at, coins')
+      .eq('id', currentUserId)
+      .maybeSingle()
+  ]);
 
   if(!error && data){
     upsertLocalEntry(data);
@@ -1125,8 +1302,21 @@ async function initProgress(){
     roundIndex = Math.min(data.current_round || 0, rounds.length - 1);
   }
 
-  updateHeader();
+  if(!profileError && profileRow && (profileRow.hearts !== null && profileRow.hearts !== undefined)){
+    hearts = profileRow.hearts;
+    heartsUpdatedAt = profileRow.hearts_updated_at || heartsUpdatedAt;
+    totalCoinsSaved = profileRow.coins || 0;
+  } else {
+    // new user: initialize defaults on the profile row
+    await supabaseClient.from('profiles').update({
+      hearts: HEART_MAX, hearts_updated_at: heartsUpdatedAt, coins: 0
+    }).eq('id', currentUserId);
+  }
+
+updateHeader();
   drawGuide();
+  startHeartTimer();
+  resetIdleTimer();
 }
 
 window.addEventListener('beforeunload', saveOnExitOrRefresh);
