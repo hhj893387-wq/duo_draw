@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sketch Quest — Lesson 2: Basic Shapes</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#FFE053;
+  --coral:#FE6474;
+  --blue:#4279DA;
+  --ink:#2E2A24;
+  --cream:#FFFCF5;
+  --white:#FFFFFF;
+  --gray:#8A8378;
+  --green:#8FD44C;
+  --lockgray:#D9D3C4;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-off:6px;
+  --card-pad:clamp(8px,1.6vh,16px);
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+html{ height:100%; }
+body{
+  font-family:'Baloo 2','Nunito',sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+}
+h1,h2,h3{ font-family:'Baloo 2',sans-serif; margin:0; }
+p,span,button{ font-family:'Nunito',sans-serif; }
+
+.page{
+  max-width:720px;
+  height:100vh;
+  height:100dvh;
+  margin:0 auto;
+  padding:clamp(8px,1.6vh,18px) clamp(12px,4vw,18px) clamp(8px,1.6vh,16px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:clamp(8px,2vw,14px);
+  margin-bottom:clamp(6px,1.6vh,22px);
+  flex-shrink:0;
+}
+.exit-btn{
+  width:clamp(30px,4.2vh,40px); height:clamp(30px,4.2vh,40px);
+  border-radius:50%;
+  border:3px solid var(--ink);
+  background:var(--white);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  box-shadow:3px 3px 0 var(--ink);
+  transition:transform .1s ease, box-shadow .1s ease;
+}
+.exit-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+.exit-btn svg{ width:clamp(14px,2.2vh,18px); height:clamp(14px,2.2vh,18px); }
+
+.progress-track{
+  flex:1;
+  height:clamp(12px,2vh,18px);
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  padding:2px;
+  position:relative;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:var(--green);
+  transition:width .6s cubic-bezier(.34,1.2,.4,1);
+}
+
+.round-label{
+  display:none;
+}
+
+.heart-display{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-shrink:0;
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:clamp(13px,2vh,16px);
+  color:var(--ink);
+}
+.heart-display svg{
+  width:clamp(20px,3vh,26px);
+  height:clamp(20px,3vh,26px);
+  flex-shrink:0;
+}
+.round-title{
+  text-align:center;
+  font-size:clamp(16px,2.6vh,24px);
+  font-weight:800;
+  margin-bottom:clamp(8px,1.8vh,18px);
+  flex-shrink:0;
+}
+
+/* ---------- canvas card ---------- */
+.canvas-card{
+  position:relative;
+  background:var(--cream);
+  border:4px solid var(--ink);
+  border-radius:var(--radius-lg);
+  padding:6px;
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.canvas-wrap{
+  position:relative;
+  width:100%;
+  height:100%;
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  background:var(--cream);
+  touch-action:none;
+}
+.canvas-wrap canvas{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  display:block;
+}
+#guideCanvas{ z-index:1; }
+#drawCanvas{ z-index:2; cursor:crosshair; }
+
+
+
+.controls-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:clamp(10px,3vw,16px);
+  width:100%;
+  margin-top:clamp(12px,2.2vh,18px);
+  flex-shrink:0;
+}
+.btn-icon-round{
+  width:52px; height:52px;
+  border-radius:50%;
+  border:3px solid var(--ink);
+  background:var(--white);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  box-shadow:0 4px 0 var(--ink);
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn-icon-round:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+.btn-icon-round svg{ width:20px; height:20px; }
+
+/* ---------- chunky buttons (from styles.css pattern) ---------- */
+.btn{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:15px 18px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:var(--ink);
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  transform:translateY(0);
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease, opacity .15s ease;
+}
+.btn svg{ width:18px; height:18px; flex-shrink:0; }
+.btn:hover:not(:disabled){ background:#FFE87A; }
+.btn:active:not(:disabled),
+.btn.pressed{ transform:translateY(6px); box-shadow:0 0 0 var(--ink); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.btn-outline{ background:var(--white); color:var(--gray); flex:0 0 auto; padding:15px 18px; }
+.btn-outline:hover:not(:disabled){ background:#F5F1E6; }
+
+.btn-primary{ background:var(--green); color:var(--ink); flex:1 1 100%; font-size:19px; padding:17px 18px; }
+.btn-primary:hover:not(:disabled){ background:#A2E066; }
+
+.btn-coral{ background:var(--coral); color:var(--white); }
+.btn-coral:hover:not(:disabled){ background:#FF7A8B; }
+
+.btn-blue{ background:var(--blue); color:var(--white); }
+.btn-blue:hover:not(:disabled){ background:#5A8CE6; }
+
+/* ---------- feedback popup (inline, over canvas card) ---------- */
+/* ---------- result banner (success / fail bottom sheet) ---------- */
+.result-banner{
+  position:absolute;
+  left:calc(-1 * var(--card-pad));
+  right:calc(-1 * var(--card-pad));
+  bottom:calc(-1 * var(--card-pad));
+  display:none;
+  align-items:center;
+  gap:14px;
+  padding:18px 20px 20px;
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  z-index:30;
+  animation:bannerUp .32s cubic-bezier(.34,1.56,.64,1);
+}
+.result-banner.show{ display:flex; }
+@keyframes bannerUp{
+  0%{ opacity:0; transform:translateY(30px); }
+  100%{ opacity:1; transform:translateY(0); }
+}
+.result-banner--success{ background:var(--green); }
+.result-banner--fail{ background:var(--coral); }
+
+.result-icon{
+  width:52px; height:52px;
+  flex-shrink:0;
+  border-radius:50%;
+  background:var(--white);
+  border:3px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation:iconPop .5s cubic-bezier(.34,1.76,.64,1) .1s both;
+}
+@keyframes iconPop{
+  0%{ transform:scale(0) rotate(-20deg); }
+  60%{ transform:scale(1.18) rotate(6deg); }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+.result-icon svg{ width:26px; height:26px; }
+
+.result-text{ flex:1; min-width:0; }
+.result-title{ font-size:19px; font-weight:800; color:var(--white); line-height:1.15; }
+.result-sub{ font-size:13px; font-weight:700; color:var(--white); opacity:.92; margin-top:2px; line-height:1.3; }
+
+.btn-banner{
+  flex-shrink:0;
+  padding:13px 18px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:15px;
+  font-weight:800;
+  color:var(--ink);
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  box-shadow:0 4px 0 var(--ink);
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn-banner:active{ transform:translateY(4px); box-shadow:0 0 0 var(--ink); }
+
+.btn-check{
+  background:var(--green);
+  color:var(--ink);
+  margin-left:auto;
+}
+.btn-check:hover:not(:disabled){ background:#A2E066; }
+.btn-check:disabled{ opacity:.45; cursor:not-allowed; }
+
+.btn-check-retry{
+  background:var(--coral);
+  color:var(--white);
+  margin-left:auto;
+}
+.btn-check-retry:hover{ background:#FF7A8B; }
+
+/* ---------- failure / tips takeover ---------- */
+
+
+/* ---------- toast for xp/coin pickup ---------- */
+.toast{
+  position:fixed;
+  top:22px;
+  left:50%;
+  transform:translateX(-50%) translateY(-60px);
+  display:flex;
+  gap:10px;
+  background:var(--ink);
+  color:var(--white);
+  font-weight:800;
+  font-size:14px;
+  padding:10px 18px;
+  border-radius:999px;
+  box-shadow:0 6px 0 rgba(0,0,0,.15);
+  z-index:200;
+  opacity:0;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+}
+.toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
+.toast .pill{ display:flex; align-items:center; gap:5px; }
+.toast svg{ width:16px; height:16px; }
+.toast .xp svg{ stroke:var(--yellow); }
+.toast .coin svg{ stroke:var(--coral); }
+
+/* ---------- success screen ---------- */
+.success-screen{
+  position:fixed;
+  inset:0;
+  background:var(--cream);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:500;
+  padding:28px;
+  text-align:center;
+  overflow:hidden;
+}
+.success-screen.show{ display:flex; }
+
+.confetti{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.confetti span{
+  position:absolute;
+  top:-40px;
+  width:12px; height:12px;
+  border-radius:3px;
+  opacity:.95;
+  animation:fall linear infinite;
+}
+@keyframes fall{
+  to{ transform:translateY(115vh) rotate(400deg); }
+}
+
+.trophy-badge{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  
+  margin-bottom:20px;
+  animation:trophyPop .6s cubic-bezier(.34,1.76,.64,1) both, trophyBob 2.4s ease-in-out 1s infinite;
+  z-index:2;
+}
+@keyframes trophyPop{
+  0%{ transform:scale(0) rotate(-25deg); opacity:0; }
+  65%{ transform:scale(1.15) rotate(8deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+@keyframes trophyBob{
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  50%{ transform:translateY(-8px) rotate(-3deg); }
+}
+.trophy-badge svg{ width:58px; height:58px; }
+
+.success-screen h1{ font-size:30px; margin-bottom:6px; z-index:2; }
+.success-screen .sub{ font-size:15px; font-weight:700; color:var(--gray); margin-bottom:26px; z-index:2; }
+
+.stats-row{
+  display:flex;
+  gap:12px;
+  margin-bottom:28px;
+  z-index:2;
+}
+.stat-card{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  padding:14px 18px;
+  min-width:96px;
+  box-shadow:4px 4px 0 var(--ink);
+}
+.stat-card svg{ width:26px; height:26px; margin-bottom:6px; }
+.stat-card .num{ font-size:22px; font-weight:800; display:block; }
+.stat-card .lbl{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--gray); }
+
+.streak-line{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  padding:8px 18px 8px 12px;
+  margin-bottom:30px;
+  z-index:2;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.streak-line svg{ width:22px; height:22px; }
+.streak-line span{ font-weight:800; font-size:14px; }
+
+.success-screen .btn-primary{
+  flex:0 0 auto;
+  width:100%;
+  max-width:320px;
+  z-index:2;
+}
+/* ---------- responsive ---------- */
+@media (max-width:420px){
+  .round-title{ font-size:20px; }
+  .stats-row{ gap:8px; }
+  .stat-card{ padding:12px 14px; min-width:84px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="exit-btn" id="exitBtn" aria-label="Exit lesson">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="progress-track" id="progressTrack"></div>
+    <div class="heart-display">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M41.68 9.21999C40.6585 8.198 39.4456 7.38728 38.1107 6.83416C36.7758 6.28103 35.345 5.99634 33.9 5.99634C32.455 5.99634 31.0242 6.28103 29.6893 6.83416C28.3544 7.38728 27.1415 8.198 26.12 9.21999L24 11.34L21.88 9.21999C19.8166 7.15661 17.0181 5.99741 14.1 5.99741C11.1819 5.99741 8.38338 7.15661 6.31999 9.21999C4.25661 11.2834 3.09741 14.0819 3.09741 17C3.09741 19.9181 4.25661 22.7166 6.31999 24.78L24 42.46L41.68 24.78C42.702 23.7585 43.5127 22.5456 44.0658 21.2107C44.6189 19.8758 44.9036 18.445 44.9036 17C44.9036 15.555 44.6189 14.1242 44.0658 12.7893C43.5127 11.4544 42.702 10.2415 41.68 9.21999Z" fill="black" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M39.9434 9.21999C38.9644 8.198 37.8021 7.38728 36.5228 6.83416C35.2435 6.28103 33.8723 5.99634 32.4875 5.99634C31.1028 5.99634 29.7316 6.28103 28.4523 6.83416C27.173 7.38728 26.0106 8.198 25.0317 9.21999L23 11.34L20.9684 9.21999C18.9909 7.15661 16.309 5.99741 13.5125 5.99741C10.716 5.99741 8.0341 7.15661 6.05669 9.21999C4.07928 11.2834 2.96838 14.0819 2.96838 17C2.96838 19.9181 4.07928 22.7166 6.05669 24.78L23 42.46L39.9434 24.78C40.9228 23.7585 41.6997 22.5456 42.2298 21.2107C42.7599 19.8758 43.0327 18.445 43.0327 17C43.0327 15.555 42.7599 14.1242 42.2298 12.7893C41.6997 11.4544 40.9228 10.2415 39.9434 9.21999Z" fill="#FF383C" stroke="#FF383C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="14" r="4" fill="white"/>
+        <circle cx="18" cy="17" r="2" fill="white"/>
+        <circle cx="15" cy="19" r="1" fill="white"/>
+      </svg>
+      <span id="heartCountDisplay">5</span>
+    </div>
+  </div>
+
+  <div class="round-label" id="roundLabel">Shape 1 of 4</div>
+  <h2 class="round-title" id="roundTitle">Trace the triangle</h2>
+
+  <!-- CANVAS CARD -->
+  <div class="canvas-card">
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="guideCanvas"></canvas>
+      <canvas id="drawCanvas"></canvas>
+    </div>
+
+    <!-- success / good result banner -->
+    <div class="result-banner result-banner--success" id="feedbackOverlay">
+      <div class="result-icon" id="feedbackIcon"></div>
+      <div class="result-text">
+        <div class="result-title" id="feedbackTitle">Excellent!</div>
+      </div>
+    </div>
+
+    <!-- fail result banner -->
+    <div class="result-banner result-banner--fail" id="failureOverlay">
+      <div class="result-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6L6 18"></path>
+          <path d="M6 6l12 12"></path>
+        </svg>
+      </div>
+      <div class="result-text">
+        <div class="result-title">Almost there!</div>
+        <div class="result-sub" id="failureSub">Your trace wandered a bit off the guide. Take your time on the next try.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <button class="btn-icon-round" id="clearBtn" aria-label="Clear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--gray)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 11A8 8 0 1 0 18.5 16"></path>
+        <path d="M20 5v6h-6"></path>
+      </svg>
+    </button>
+    <button class="btn-banner btn-check" id="checkBtn" disabled>Check</button>
+  </div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast">
+  <span class="pill xp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path></svg> <span id="toastXp">+10 XP</span></span>
+  <span class="pill coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M9.5 9.3c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.8 2.5-1.8"></path></svg> <span id="toastCoin">+5</span></span>
+</div>
+
+<!-- success screen -->
+<div class="success-screen" id="successScreen">
+  <div class="confetti" id="confetti"></div>
+  <div class="trophy-badge">
+    
+<svg width="121" height="124" viewBox="0 0 121 124" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.52368 15.0854H33.3893V19.4947H12.8122V41.5411L33.3893 50.3596L38.5336 59.1782L7.66795 45.9503L2.52368 19.4947V15.0854Z" fill="black"/>
+<path d="M120.84 15.0854H89.9746V19.4947H110.552V41.5411L89.9746 50.3596L84.8303 59.1782L115.696 45.9503L120.84 19.4947V15.0854Z" fill="black"/>
+<path d="M38.5352 6.26245H89.9778V63.583L79.6893 67.9922H64.2565H48.8237L38.5352 63.583V6.26245Z" fill="black"/>
+<path d="M33.9831 64.6558C32.0491 63.6064 30.8447 61.5825 30.8447 59.3822V8.92786C30.8447 7.44804 32.0444 6.24841 33.5242 6.24841C35.004 6.24841 36.2036 7.44804 36.2036 8.92785V32.4197V58.9168C36.2036 61.3571 37.6816 63.5543 39.9419 64.4742L45.8338 66.8721C46.552 67.1644 47.3201 67.3147 48.0955 67.3147H77.9004C78.6759 67.3147 79.444 67.1644 80.1622 66.8721L86.0541 64.4742C88.3144 63.5543 89.7924 61.3571 89.7924 58.9168V41.1434V8.92785C89.7924 7.44804 90.992 6.24841 92.4718 6.24841C93.9516 6.24841 95.1513 7.44804 95.1513 8.92785V59.3822C95.1513 61.5825 93.9469 63.6064 92.0129 64.6558L80.4133 70.9502C79.5348 71.4269 78.5511 71.6766 77.5516 71.6766H48.4444C47.4449 71.6766 46.4612 71.4269 45.5827 70.9502L33.9831 64.6558Z" fill="black"/>
+<path d="M53.4875 71.6765H63.3251H73.1627V89.4979L83.0003 98.4086H73.1627H53.4875H43.6499L53.4875 89.4979V71.6765Z" fill="black"/>
+<rect x="25.1596" y="1.85535" width="77.164" height="8.81854" rx="4" fill="black"/>
+<path d="M0 13.2301H30.8656V17.6394H10.2885V39.6857L30.8656 48.5043L36.0099 57.3228L5.14427 44.095L0 17.6394V13.2301Z" fill="#E7A615"/>
+<path d="M118.317 13.2301H87.4509V17.6394H108.028V39.6857L87.4509 48.5043L82.3067 57.3228L113.172 44.095L118.317 17.6394V13.2301Z" fill="#E7A615"/>
+<rect x="20.5787" y="114.64" width="82.3083" height="8.81854" fill="black"/>
+<rect x="30.8656" y="96.9988" width="61.7312" height="17.6371" fill="black"/>
+<path d="M34.2096 4.37903H88.7019V62.3564L77.8034 66.8162H61.4557H45.1081L34.2096 62.3564V4.37903Z" fill="url(#paint0_linear_2511_108)"/>
+<path d="M33.8888 63.4553C32.0193 62.387 30.8656 60.3989 30.8656 58.2458V6.97936C30.8656 5.55881 32.0172 4.40723 33.4377 4.40723C34.8583 4.40723 36.0099 5.55881 36.0099 6.97936V30.8628V57.7713C36.0099 60.1715 37.4403 62.3408 39.6464 63.2862L45.1665 65.6519C45.9133 65.972 46.7174 66.137 47.5299 66.137H75.9325C76.745 66.137 77.5491 65.972 78.296 65.6519L83.816 63.2862C86.0222 62.3408 87.4526 60.1715 87.4526 57.7713V39.6814V6.97936C87.4526 5.55881 88.6041 4.40723 90.0247 4.40723C91.4452 4.40723 92.5968 5.55881 92.5968 6.97936V58.2458C92.5968 60.3989 91.4431 62.387 89.5736 63.4553L78.5474 69.7558C77.6409 70.2738 76.6148 70.5463 75.5707 70.5463H47.8918C46.8476 70.5463 45.8216 70.2738 44.915 69.7558L33.8888 63.4553Z" fill="url(#paint1_linear_2511_108)"/>
+<path d="M51.25 70H61.5H71.75V88L82 97H71.75H51.25H41L51.25 88V70Z" fill="url(#paint2_linear_2511_108)"/>
+<rect x="22.6359" width="77.164" height="8.81854" rx="4" fill="#FFCC00"/>
+<defs>
+<linearGradient id="paint0_linear_2511_108" x1="61.4557" y1="4.37903" x2="61.4557" y2="66.8162" gradientUnits="userSpaceOnUse">
+<stop offset="0.668312" stop-color="#FFCC00"/>
+</linearGradient>
+<linearGradient id="paint1_linear_2511_108" x1="61.7312" y1="4.40723" x2="61.7312" y2="70.5463" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCC00"/>
+</linearGradient>
+<linearGradient id="paint2_linear_2511_108" x1="61.5" y1="70" x2="64" y2="119.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFCC00"/>
+<stop offset="1" stop-color="#FF8D28"/>
+</linearGradient>
+</defs>
+</svg>
+
+  </div>
+  <h1>Shapes Complete!</h1>
+  <p class="sub">You nailed every basic shape.</p>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path></svg>
+      <span class="num" id="totalXp">0</span>
+      <span class="lbl">XP earned</span>
+    </div>
+    <div class="stat-card">
+     
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="25" height="24" rx="12" transform="matrix(-1 0 0 1 25 0)" fill="black"/>
+<rect x="0.5" y="0.500244" width="22.6577" height="21.3522" rx="10.6761" fill="#FF8D28" stroke="#FFCC00"/>
+<path d="M4 9C4 9.55228 3.55228 10 3 10C2.44772 10 2 9.55228 2 9C2 8.44772 2.44772 8 3 8C3.55228 8 4 8.44772 4 9Z" fill="white"/>
+<circle cx="5" cy="6" r="2" fill="white"/>
+<circle cx="5.5" cy="9.5" r="1.5" fill="white"/>
+<rect x="8.96167" y="8.29663" width="1.56645" height="7.31008" transform="rotate(-27.4168 8.96167 8.29663)" fill="#FFCC00"/>
+<rect x="12.8086" y="15.7126" width="3.13289" height="2.08859" rx="1" transform="rotate(-27.4168 12.8086 15.7126)" fill="#FF2D55"/>
+<rect x="10.3522" y="7.57544" width="1.56645" height="7.31008" transform="rotate(-27.4168 10.3522 7.57544)" fill="#FFCC00"/>
+<path d="M9.3905 5.72134L11.7427 6.85406L8.96172 8.29663L9.3905 5.72134Z" fill="#555555"/>
+<rect x="12.3278" y="14.7856" width="3.13289" height="1.0443" transform="rotate(-27.4168 12.3278 14.7856)" fill="white"/>
+</svg>
+
+      <span class="num" id="totalCoins">0</span>
+      <span class="lbl">Coins</span>
+    </div>
+  </div>
+
+  <div class="streak-line">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
+    </svg>
+    <span>Streak continues — day 4</span>
+  </div>
+
+  <button class="btn btn-primary" id="continueBtn">Continue</button>
+</div>
+
+<script>
+/* ---------------- round definitions ---------------- */
+/* Each shape is described in normalized (0-1) coordinates relative to the canvas.
+   type:'polygon' rounds give an ordered array of vertices (closed automatically).
+   type:'circle' rounds give a center point and a radius (relative to the shorter
+   canvas dimension). */
+const rounds = [
+  { name:'Triangle',  title:'Trace the triangle',  type:'polygon', points:[[0.5,0.15],[0.85,0.82],[0.15,0.82]] },
+  { name:'Circle',    title:'Trace the circle',    type:'circle',  center:[0.5,0.5], radius:0.33 },
+  { name:'Square',    title:'Trace the square',    type:'polygon', points:[[0.28,0.20],[0.72,0.20],[0.72,0.80],[0.28,0.80]] },
+  { name:'Rectangle', title:'Trace the rectangle', type:'polygon', points:[[0.14,0.30],[0.86,0.30],[0.86,0.70],[0.14,0.70]] },
+];
+
+const excellentPhrases = ['Excellent!', 'Shape master!', 'Chef\'s kiss!', 'Steady hands!', 'Nailed it!'];
+const goodPhrases = ['Good!', 'Nice control!', 'Getting sharper!', 'Solid shape!', 'You\'ve got this!'];
+const nearMissPhrases = ['So close!', 'Almost there!', 'Just a hair off!'];
+
+let comboStreak = 0; // consecutive "excellent" rounds this lesson — resets on any non-excellent
+
+let roundIndex = 0;
+let attemptsThisRound = 0;
+let totalXp = 0;
+let totalCoins = 0;
+
+// Multi-stroke tracking
+let strokes = [];          // finished strokes: array of arrays of [x,y]
+let currentStroke = [];    // stroke currently being drawn
+let hasDrawn = false;
+let drawing = false;
+
+/* ---------------- DOM refs ---------------- */
+const progressTrack = document.getElementById('progressTrack');
+const roundLabel = document.getElementById('roundLabel');
+const roundTitle = document.getElementById('roundTitle');
+const canvasWrap = document.getElementById('canvasWrap');
+const guideCanvas = document.getElementById('guideCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const gctx = guideCanvas.getContext('2d');
+const dctx = drawCanvas.getContext('2d');
+const clearBtn = document.getElementById('clearBtn');
+const checkBtn = document.getElementById('checkBtn');
+const feedbackOverlay = document.getElementById('feedbackOverlay');
+const feedbackIcon = document.getElementById('feedbackIcon');
+const feedbackTitle = document.getElementById('feedbackTitle');
+const failureOverlay = document.getElementById('failureOverlay');
+const failureSub = document.getElementById('failureSub');
+let checkMode = 'check'; // 'check' | 'continue' | 'retry'
+const toast = document.getElementById('toast');
+const toastXp = document.getElementById('toastXp');
+const toastCoin = document.getElementById('toastCoin');
+const successScreen = document.getElementById('successScreen');
+const totalXpEl = document.getElementById('totalXp');
+const totalCoinsEl = document.getElementById('totalCoins');
+const continueBtn = document.getElementById('continueBtn');
+
+const successSound = new Audio('assets/sound/success.mp3');
+const failSound = new Audio('assets/sound/fail.mp3');
+successSound.preload = 'auto';
+failSound.preload = 'auto';
+function playSound(audio){
+  try{
+    audio.currentTime = 0;
+    audio.play().catch(()=>{ /* autoplay blocked until first user gesture — fine, checks always follow a tap */ });
+  } catch(e){ /* no-op */ }
+}
+
+/* ---------------- icons ---------------- */
+const ICONS = {
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.4 20.1l1.4-6.3-4.8-4.3 6.4-.6L12 3z"></path></svg>',
+  thumb:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11M2 13v7a2 2 0 0 0 2 2h12.6a2 2 0 0 0 2-1.6l1.3-6A2 2 0 0 0 18 12h-5l1-5.5A1.5 1.5 0 0 0 12.6 4.8L7 11"></path></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8 8 0 1 0 18.5 16"></path><path d="M20 5v6h-6"></path></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>'
+};
+
+/* ---------------- idle nudges ---------------- */
+let idleTimer = null;
+function resetIdleTimer(){ /* hint removed — no-op kept so existing calls still work */ }
+
+
+/* ---------------- setup canvas ---------------- */
+function sizeCanvases(){
+  const rect = canvasWrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  [guideCanvas, drawCanvas].forEach(c=>{
+    c.width = rect.width * dpr;
+    c.height = rect.height * dpr;
+  });
+  gctx.setTransform(dpr,0,0,dpr,0,0);
+  dctx.setTransform(dpr,0,0,dpr,0,0);
+  drawGuide();
+}
+
+function toPx(p, rect){
+  return [p[0]*rect.width, p[1]*rect.height];
+}
+
+/* Build a dense array of pixel points tracing the full closed perimeter of the
+   round's shape. Used both to render the dashed guide and to score the stroke. */
+function buildOutline(round, rect){
+  const pts = [];
+  if(round.type === 'polygon'){
+    const verts = round.points.map(p=> toPx(p, rect));
+    const segSamples = 26;
+    for(let i=0;i<verts.length;i++){
+      const a = verts[i];
+      const b = verts[(i+1) % verts.length];
+      for(let s=0;s<segSamples;s++){
+        const t = s/segSamples;
+        pts.push([ a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t ]);
+      }
+    }
+  } else if(round.type === 'circle'){
+    const cx = round.center[0]*rect.width;
+    const cy = round.center[1]*rect.height;
+    const r = round.radius * Math.min(rect.width, rect.height);
+    const N = 160;
+    for(let i=0;i<N;i++){
+      const ang = -Math.PI/2 + (i/N)*Math.PI*2; // start at top, sweep clockwise
+      pts.push([ cx + r*Math.cos(ang), cy + r*Math.sin(ang) ]);
+    }
+  }
+  return pts;
+}
+
+function perimeterLength(outline){
+  let len = 0;
+  for(let i=1;i<outline.length;i++){
+    len += Math.hypot(outline[i][0]-outline[i-1][0], outline[i][1]-outline[i-1][1]);
+  }
+  if(outline.length > 1){
+    len += Math.hypot(outline[0][0]-outline[outline.length-1][0], outline[0][1]-outline[outline.length-1][1]);
+  }
+  return len;
+}
+
+function drawGuide(){
+  const rect = canvasWrap.getBoundingClientRect();
+  gctx.clearRect(0,0,rect.width,rect.height);
+  const round = rounds[roundIndex];
+  const outline = buildOutline(round, rect);
+  if(outline.length < 2) return;
+
+  gctx.save();
+  gctx.strokeStyle = '#C9C1AE';
+  gctx.lineWidth = 4;
+  gctx.lineCap = 'round';
+  gctx.lineJoin = 'round';
+  gctx.setLineDash([2,14]);
+  gctx.beginPath();
+  gctx.moveTo(outline[0][0], outline[0][1]);
+  for(let i=1;i<outline.length;i++){
+    gctx.lineTo(outline[i][0], outline[i][1]);
+  }
+  gctx.closePath();
+  gctx.stroke();
+  gctx.restore();
+
+  // start marker
+  
+}
+
+function clearDraw(){
+  const rect = canvasWrap.getBoundingClientRect();
+  dctx.clearRect(0,0,rect.width,rect.height);
+  strokes = [];
+  currentStroke = [];
+  hasDrawn = false;
+  checkBtn.disabled = true;
+  resetIdleTimer();
+}
+
+/* ---------------- drawing input ---------------- */
+function getPos(e){
+  const rect = drawCanvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return [clientX-rect.left, clientY-rect.top];
+}
+
+function startDraw(e){
+  e.preventDefault();
+  clearInterval(idleTimer); // stop nudging once they've actually started
+  drawing = true;
+  currentStroke = [];
+  const [x,y] = getPos(e);
+  currentStroke.push([x,y]);
+  dctx.beginPath();
+  dctx.moveTo(x,y);
+}
+function moveDraw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const [x,y] = getPos(e);
+  currentStroke.push([x,y]);
+  dctx.strokeStyle = '#4279DA';
+  dctx.lineWidth = 6;
+  dctx.lineCap = 'round';
+  dctx.lineJoin = 'round';
+  dctx.lineTo(x,y);
+  dctx.stroke();
+}
+function endDraw(e){
+  if(!drawing) return;
+  drawing = false;
+  if(currentStroke.length > 1){
+    strokes.push(currentStroke);
+  }
+  currentStroke = [];
+  const totalPoints = strokes.reduce((n,s)=>n+s.length, 0);
+  hasDrawn = totalPoints > 3;
+  checkBtn.disabled = !hasDrawn;
+}
+
+drawCanvas.addEventListener('pointerdown', startDraw);
+drawCanvas.addEventListener('pointermove', moveDraw);
+window.addEventListener('pointerup', endDraw);
+drawCanvas.addEventListener('touchstart', startDraw, {passive:false});
+drawCanvas.addEventListener('touchmove', moveDraw, {passive:false});
+window.addEventListener('touchend', endDraw);
+
+clearBtn.addEventListener('click', ()=>{
+  feedbackOverlay.classList.remove('show');
+  failureOverlay.classList.remove('show');
+  clearDraw();
+  switchToCheck();
+});
+
+/* ---------------- scoring ---------------- */
+function scoreStroke(){
+  const rect = canvasWrap.getBoundingClientRect();
+  const round = rounds[roundIndex];
+  const outline = buildOutline(round, rect);
+  const guideLen = perimeterLength(outline);
+
+  const allPoints = strokes.flat();
+  if(allPoints.length < 2 || guideLen === 0) return 0;
+
+  let drawnLength = 0;
+  strokes.forEach(stroke=>{
+    for(let i=1;i<stroke.length;i++){
+      drawnLength += Math.hypot(stroke[i][0]-stroke[i-1][0], stroke[i][1]-stroke[i-1][1]);
+    }
+  });
+  const lengthRatio = drawnLength / guideLen;
+
+  // coverage: sample points around the outline and check a drawn point is nearby
+  const step = Math.max(1, Math.floor(outline.length / 60));
+  const coverThreshold = Math.max(16, guideLen * 0.035);
+  let coveredCount = 0, sampleCount = 0;
+  for(let i=0;i<outline.length;i+=step){
+    sampleCount++;
+    const [sx,sy] = outline[i];
+    let minDist = Infinity;
+    for(const p of allPoints){
+      const d = Math.hypot(p[0]-sx, p[1]-sy);
+      if(d < minDist){ minDist = d; if(minDist < coverThreshold) break; }
+    }
+    if(minDist <= coverThreshold) coveredCount++;
+  }
+  const coverage = sampleCount ? coveredCount/sampleCount : 0;
+
+  // accuracy: how close drawn points stay to the outline, and how many stray far off
+  let devSum = 0, strayCount = 0;
+  const strayThreshold = guideLen * 0.12;
+  allPoints.forEach(([x,y])=>{
+    let minDist = Infinity;
+    for(const [ox,oy] of outline){
+      const d = Math.hypot(x-ox, y-oy);
+      if(d < minDist){ minDist = d; if(minDist < 2) break; }
+    }
+    devSum += minDist;
+    if(minDist > strayThreshold) strayCount++;
+  });
+  const avgDev = devSum / allPoints.length;
+  const devNorm = Math.min(1, avgDev / (guideLen * 0.06));
+  const accuracyScore = Math.max(0, 1 - devNorm);
+  const strayPenalty = (strayCount / allPoints.length) * 0.4;
+
+  let lengthScore;
+  if(lengthRatio < 0.2){
+    lengthScore = 0;
+  } else if(lengthRatio < 0.85){
+    lengthScore = (lengthRatio - 0.2) / 0.65;
+  } else if(lengthRatio <= 1.35){
+    lengthScore = 1;
+  } else {
+    lengthScore = Math.max(0, 1 - (lengthRatio - 1.35) * 0.5);
+  }
+
+  const strokeCountPenalty = Math.max(0, (strokes.length - 1) * 0.15);
+  const continuityScore = Math.max(0, 1 - strokeCountPenalty);
+
+  let score = (
+    coverage        * 0.45 +
+    accuracyScore   * 0.30 +
+    lengthScore     * 0.20 +
+    continuityScore * 0.05
+  ) * 100;
+
+  score -= strayPenalty * 100;
+
+  if(drawnLength < guideLen * 0.15 || lengthRatio < 0.2){
+    score = Math.min(score, 8);
+  } else if(coverage < 0.35){
+    score = Math.min(score, 20);
+  } else if(coverage < 0.6){
+    score = Math.min(score, 55);
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/* ---------------- flow control ---------------- */
+function updateHeader(){
+  let fill = progressTrack.querySelector('.progress-fill');
+  if(!fill){
+    fill = document.createElement('div');
+    fill.className = 'progress-fill';
+    progressTrack.appendChild(fill);
+  }
+  const pct = (roundIndex / rounds.length) * 100;
+  requestAnimationFrame(()=>{ fill.style.width = pct + '%'; });
+  roundLabel.textContent = 'Shape ' + (roundIndex+1) + ' of ' + rounds.length;
+  roundTitle.textContent = rounds[roundIndex].title;
+}
+function showToast(xp, coins, isCombo){
+  toastXp.textContent = (isCombo ? 'Combo! +' : '+') + xp + ' XP';
+  toastCoin.textContent = '+' + coins;
+  toast.classList.add('show');
+  setTimeout(()=> toast.classList.remove('show'), isCombo ? 2200 : 1400);
+}
+
+/* ---------------- check / continue / retry button state machine ---------------- */
+function switchToCheck(){
+  checkMode = 'check';
+  checkBtn.textContent = 'Check';
+  checkBtn.classList.remove('btn-check-retry');
+  checkBtn.classList.add('btn-check');
+  checkBtn.disabled = !hasDrawn;
+}
+function switchToContinue(){
+  checkMode = 'continue';
+  checkBtn.textContent = roundIndex === rounds.length-1 ? 'Finish' : 'Continue';
+  checkBtn.classList.remove('btn-check-retry');
+  checkBtn.classList.add('btn-check');
+  checkBtn.disabled = false;
+}
+function switchToRetry(){
+  checkMode = 'retry';
+  checkBtn.textContent = 'Try again';
+  checkBtn.classList.remove('btn-check');
+  checkBtn.classList.add('btn-check-retry');
+  checkBtn.disabled = false;
+}
+
+let advancing = false; // guards against double-fire on fast double-tap/click
+
+function advanceRound(){
+  if(advancing) return;
+  advancing = true;
+  checkBtn.disabled = true;
+
+  feedbackOverlay.classList.remove('show');
+  let xp = isReviewMode ? 0 : parseInt(checkBtn.dataset.xp || 10, 10);
+  let coins = isReviewMode ? 0 : parseInt(checkBtn.dataset.coins || 5, 10);
+  const isCombo = !isReviewMode && checkBtn.dataset.combo === '1';
+  if(isCombo){
+    xp += 10;
+    coins += 5;
+    comboStreak = 0; // pay out once, then restart the streak count
+  }
+  totalXp += xp;
+  totalCoins += coins;
+  if(!isReviewMode){
+    showToast(xp, coins, isCombo);
+  }
+  addCoins(coins);
+
+  if(roundIndex === rounds.length-1){
+    persistProgress({ completed:true, xp:totalXp, coins:totalCoins, current_round:roundIndex });
+    setTimeout(showSuccess, 500);
+    // no need to re-enable — success screen takes over navigation
+  } else {
+    roundIndex++;
+    attemptsThisRound = 0;
+    clearDraw();
+    switchToCheck();
+    updateHeader();
+    drawGuide();
+    persistProgress({ completed:false, xp:totalXp, coins:totalCoins, current_round:roundIndex });
+    advancing = false;
+  }
+}
+
+checkBtn.addEventListener('click', ()=>{
+  if(checkMode === 'continue'){ advanceRound(); return; }
+  if(checkMode === 'retry'){
+    failureOverlay.classList.remove('show');
+    clearDraw();
+    switchToCheck();
+    return;
+  }
+
+  // checkMode === 'check'
+  if(!hasDrawn) return;
+  const score = scoreStroke();
+
+  if(score >= 85){
+    comboStreak++;
+    feedbackIcon.innerHTML = ICONS.check;
+    feedbackTitle.textContent = excellentPhrases[Math.floor(Math.random()*excellentPhrases.length)];
+    feedbackOverlay.classList.add('show');
+    playSound(successSound);
+    checkBtn.dataset.xp = 15;
+    checkBtn.dataset.coins = 8;
+    checkBtn.dataset.combo = comboStreak >= 3 ? '1' : '0';
+    switchToContinue();
+  } else if(score >= 60){
+    comboStreak = 0;
+    feedbackIcon.innerHTML = ICONS.check;
+    feedbackTitle.textContent = goodPhrases[Math.floor(Math.random()*goodPhrases.length)];
+    feedbackOverlay.classList.add('show');
+    playSound(successSound);
+    checkBtn.dataset.xp = 10;
+    checkBtn.dataset.coins = 5;
+    checkBtn.dataset.combo = '0';
+    switchToContinue();
+  } else {
+    comboStreak = 0;
+    attemptsThisRound++;
+    if(score >= 45){
+      const near = nearMissPhrases[Math.floor(Math.random()*nearMissPhrases.length)];
+      failureSub.textContent = near + ' You were only a few points off — keep the stroke steady and try again.';
+    } else {
+      failureSub.textContent = attemptsThisRound > 1
+        ? 'Still a little off the guide — that\'s okay, shapes take practice.'
+        : 'Your trace wandered a bit off the guide. Take your time on the next try.';
+    }
+    failureOverlay.classList.add('show');
+    playSound(failSound);
+    loseHeart();
+    switchToRetry();
+  }
+});
+
+/* ---------------- success screen ---------------- */
+function buildConfetti(){
+  const holder = document.getElementById('confetti');
+  holder.innerHTML = '';
+  const colors = ['#FFE053','#FE6474','#4279DA','#8FD44C'];
+  for(let i=0;i<36;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100 + '%';
+    s.style.background = colors[i % colors.length];
+    s.style.animationDuration = (2.4 + Math.random()*2) + 's';
+    s.style.animationDelay = (Math.random()*1.6) + 's';
+    s.style.opacity = 0.7 + Math.random()*0.3;
+    s.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    holder.appendChild(s);
+  }
+}
+
+function countUp(el, target, duration){
+  const start = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-start)/duration);
+    el.textContent = Math.round(target * p);
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function showSuccess(){
+  buildConfetti();
+  successScreen.classList.add('show');
+  countUp(totalXpEl, totalXp, 900);
+  countUp(totalCoinsEl, totalCoins, 900);
+}
+
+continueBtn.addEventListener('click', ()=>{
+  window.location.href = 'home.html';
+});
+
+document.getElementById('exitBtn').addEventListener('click', ()=>{
+  persistProgress({ xp:totalXp, coins:totalCoins, current_round:roundIndex });
+  window.location.href = 'home.html';
+});
+
+/* ---------------- progress sync ---------------- */
+const LESSON_ID = 'lesson2';   // change to lesson1, lesson2, ... per file
+const UNIT_ID = 'unit1';       // change to unit2 for lessons 6-8
+const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
+const PROFILE_STATE_KEY = 'sketchquest_profile_state';
+const HEART_MAX = 5;
+const HEART_REGEN_MS = 5 * 60 * 1000; // 5 minutes per heart
+let currentUserId = null;
+let saveQueued = false;
+
+// ?review=1 means the user tapped "Review" on an already-completed lesson.
+const isReviewMode = new URLSearchParams(window.location.search).get('review') === '1';
+let hearts = HEART_MAX;
+let heartsUpdatedAt = new Date().toISOString();
+let totalCoinsSaved = 0; // authoritative coin total from profiles table
+let heartTimerInterval = null;
+
+function loadCachedProgress(){
+  try{ return JSON.parse(localStorage.getItem(PROGRESS_CACHE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProgress(map){
+  try{ localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(map)); } catch(e){}
+}
+function upsertLocalEntry(patch){
+  const map = loadCachedProgress();
+  const existing = map[LESSON_ID] || { lesson_id:LESSON_ID, completed:false, xp:0, coins:0, current_round:0 };
+  map[LESSON_ID] = Object.assign({}, existing, patch);
+  cacheProgress(map);
+  return map[LESSON_ID];
+}
+
+function loadCachedProfileState(){
+  try{ return JSON.parse(localStorage.getItem(PROFILE_STATE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProfileState(state){
+  try{ localStorage.setItem(PROFILE_STATE_KEY, JSON.stringify(state)); } catch(e){}
+}
+
+async function persistProgress(patch){
+  if(isReviewMode) return;
+  const entry = upsertLocalEntry(patch);
+  if(!currentUserId){ saveQueued = true; return; }
+  try{
+    await supabaseClient.from('lesson_progress').upsert({
+      user_id: currentUserId,
+      lesson_id: LESSON_ID,
+      unit_id: UNIT_ID,
+      completed: entry.completed,
+      xp: entry.xp,
+      coins: entry.coins,
+      current_round: entry.current_round,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,lesson_id' });
+  } catch(e){
+    saveQueued = true;
+  }
+}
+
+/* ---- hearts ---- */
+function regenHearts(){
+  const elapsed = Date.now() - new Date(heartsUpdatedAt).getTime();
+  if(hearts >= HEART_MAX || elapsed <= 0) return;
+  const gained = Math.floor(elapsed / HEART_REGEN_MS);
+  if(gained > 0){
+    hearts = Math.min(HEART_MAX, hearts + gained);
+    heartsUpdatedAt = new Date(new Date(heartsUpdatedAt).getTime() + gained * HEART_REGEN_MS).toISOString();
+  }
+}
+
+function updateHeartUI(){
+  regenHearts();
+  const heartCountEl = document.getElementById('heartCountDisplay');
+  if(heartCountEl) heartCountEl.textContent = hearts;
+
+ if(hearts <= 0){
+    checkBtn.disabled = true;
+    drawCanvas.style.pointerEvents = 'none';
+    clearInterval(idleTimer);
+  } else {
+    drawCanvas.style.pointerEvents = 'auto';
+    if(checkMode === 'check') checkBtn.disabled = !hasDrawn;
+  }
+  saveProfileState();
+}
+
+function startHeartTimer(){
+  if(heartTimerInterval) clearInterval(heartTimerInterval);
+  heartTimerInterval = setInterval(updateHeartUI, 1000);
+  updateHeartUI();
+}
+
+function loseHeart(){
+  if(isReviewMode) return;
+  regenHearts();
+  if(hearts > 0){
+    const wasFull = hearts >= HEART_MAX;
+    hearts = Math.max(0, hearts - 1);
+    if(wasFull) heartsUpdatedAt = new Date().toISOString();
+    updateHeartUI();
+  }
+}
+
+async function saveProfileState(){
+  cacheProfileState({ hearts, hearts_updated_at: heartsUpdatedAt, coins: totalCoinsSaved });
+  if(!currentUserId) return;
+  try{
+    await supabaseClient.rpc('update_heart_coin_state', {
+      p_hearts: hearts,
+      p_hearts_updated_at: heartsUpdatedAt,
+      p_coins: totalCoinsSaved
+    });
+  } catch(e){ /* best effort, cached locally */ }
+}
+async function addCoins(amount){
+  if(isReviewMode) return;
+  totalCoinsSaved += amount;
+  await saveProfileState();
+}
+
+function saveOnExitOrRefresh(){
+  if(!currentUserId) return;
+  const entry = loadCachedProgress()[LESSON_ID];
+  if(entry){
+    const payload = JSON.stringify({
+      user_id: currentUserId, lesson_id: LESSON_ID, unit_id: UNIT_ID,
+      completed: entry.completed, xp: entry.xp, coins: entry.coins,
+      current_round: entry.current_round, updated_at: new Date().toISOString()
+    });
+    try{
+      navigator.sendBeacon(
+        SUPABASE_URL + '/rest/v1/lesson_progress?on_conflict=user_id,lesson_id',
+        new Blob([payload], { type:'application/json' })
+      );
+    } catch(e){ /* best effort */ }
+  }
+  try{
+    navigator.sendBeacon(
+      SUPABASE_URL + '/rest/v1/profiles?id=eq.' + currentUserId,
+      new Blob([JSON.stringify({ hearts, hearts_updated_at: heartsUpdatedAt, coins: totalCoinsSaved })], { type:'application/json' })
+    );
+  } catch(e){ /* best effort */ }
+}
+
+async function initProgress(){
+  const { data:{ session } } = await supabaseClient.auth.getSession();
+  if(!session){ window.location.href = 'login.html'; return; }
+  currentUserId = session.user.id;
+
+  const cached = loadCachedProgress()[LESSON_ID];
+  if(cached && cached.completed && !isReviewMode){ window.location.href = 'home.html'; return; }
+  if(cached && cached.current_round > 0 && !isReviewMode){
+    roundIndex = Math.min(cached.current_round, rounds.length - 1);
+  }
+
+  const cachedProfile = loadCachedProfileState();
+  if(typeof cachedProfile.hearts === 'number') hearts = cachedProfile.hearts;
+  if(cachedProfile.hearts_updated_at) heartsUpdatedAt = cachedProfile.hearts_updated_at;
+  if(typeof cachedProfile.coins === 'number') totalCoinsSaved = cachedProfile.coins;
+
+  const [{ data, error }, { data: profileRow, error: profileError }] = await Promise.all([
+    supabaseClient
+      .from('lesson_progress')
+      .select('completed, xp, coins, current_round')
+      .eq('user_id', currentUserId)
+      .eq('lesson_id', LESSON_ID)
+      .maybeSingle(),
+    supabaseClient
+      .from('profiles')
+      .select('hearts, hearts_updated_at, coins')
+      .eq('id', currentUserId)
+      .maybeSingle()
+  ]);
+
+  if(!error && data){
+    upsertLocalEntry(data);
+    if(data.completed && !isReviewMode){ window.location.href = 'home.html'; return; }
+    if(!isReviewMode){
+      roundIndex = Math.min(data.current_round || 0, rounds.length - 1);
+    }
+  }
+
+  if(!profileError && profileRow && (profileRow.hearts !== null && profileRow.hearts !== undefined)){
+    hearts = profileRow.hearts;
+    heartsUpdatedAt = profileRow.hearts_updated_at || heartsUpdatedAt;
+    totalCoinsSaved = profileRow.coins || 0;
+  } else {
+    await supabaseClient.rpc('update_heart_coin_state', {
+      p_hearts: HEART_MAX,
+      p_hearts_updated_at: heartsUpdatedAt,
+      p_coins: 0
+    });
+  }
+
+  updateHeader();
+  switchToCheck();
+  drawGuide();
+  startHeartTimer();
+  resetIdleTimer();
+}
+
+window.addEventListener('beforeunload', saveOnExitOrRefresh);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') saveOnExitOrRefresh();
+});
+
+/* ---------------- init ---------------- */
+window.addEventListener('resize', sizeCanvases);
+sizeCanvases();
+initProgress();
+</script>
+</body>
+</html>
