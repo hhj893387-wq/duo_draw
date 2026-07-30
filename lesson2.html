@@ -296,29 +296,33 @@ p,span,button{ font-family:'Nunito',sans-serif; }
 
 
 /* ---------- toast for xp/coin pickup ---------- */
-.toast{
-  position:fixed;
-  top:22px;
-  left:50%;
-  transform:translateX(-50%) translateY(-60px);
-  display:flex;
-  gap:10px;
-  background:var(--ink);
-  color:var(--white);
+.combo-label{
+  text-align:center;
+  font-family:'Baloo 2',sans-serif;
   font-weight:800;
-  font-size:14px;
-  padding:10px 18px;
-  border-radius:999px;
-  box-shadow:0 6px 0 rgba(0,0,0,.15);
-  z-index:200;
+  font-size:clamp(13px,2vh,17px);
+  color:var(--blue);
+  letter-spacing:.01em;
+  height:0;
+  max-height:0;
   opacity:0;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+  overflow:hidden;
+  flex-shrink:0;
 }
-.toast.show{ transform:translateX(-50%) translateY(0); opacity:1; }
-.toast .pill{ display:flex; align-items:center; gap:5px; }
-.toast svg{ width:16px; height:16px; }
-.toast .xp svg{ stroke:var(--yellow); }
-.toast .coin svg{ stroke:var(--coral); }
+.combo-label.show{
+  max-height:28px;
+  height:auto;
+  opacity:1;
+  margin-bottom:4px;
+  animation:comboPop 1.8s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes comboPop{
+  0%{ transform:scale(.4) translateY(10px); opacity:0; }
+  15%{ transform:scale(1.15) translateY(0); opacity:1; }
+  25%{ transform:scale(1); }
+  80%{ transform:scale(1); opacity:1; }
+  100%{ transform:scale(.96); opacity:0; }
+}
 
 /* ---------- success screen ---------- */
 .success-screen{
@@ -425,6 +429,7 @@ p,span,button{ font-family:'Nunito',sans-serif; }
 <div class="page">
 
   <!-- TOP BAR -->
+  <div class="combo-label" id="comboLabel"></div>
   <div class="topbar">
     <button class="exit-btn" id="exitBtn" aria-label="Exit lesson">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
@@ -488,12 +493,6 @@ p,span,button{ font-family:'Nunito',sans-serif; }
     </button>
     <button class="btn-banner btn-check" id="checkBtn" disabled>Check</button>
   </div>
-</div>
-
-<!-- toast -->
-<div class="toast" id="toast">
-  <span class="pill xp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path></svg> <span id="toastXp">+10 XP</span></span>
-  <span class="pill coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M9.5 9.3c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.7 2.5 1.7s2.5-.8 2.5-1.8"></path></svg> <span id="toastCoin">+5</span></span>
 </div>
 
 <!-- success screen -->
@@ -560,14 +559,34 @@ p,span,button{ font-family:'Nunito',sans-serif; }
     </div>
   </div>
 
-  <div class="streak-line">
+  <div class="streak-line" id="victoryStreakLine" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
     </svg>
-    <span>Streak continues — day 4</span>
+    <span id="victoryStreakText">Day 1</span>
   </div>
 
   <button class="btn btn-primary" id="continueBtn">Continue</button>
+</div>
+
+<!-- streak screen — reuses .success-screen / .trophy-badge / .btn-primary
+     so it matches existing styling exactly, no new CSS needed -->
+<div class="success-screen" id="streakScreen">
+  <div class="trophy-badge">
+    <svg viewBox="0 0 24 24" width="58" height="58" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
+    </svg>
+  </div>
+  <h1 id="streakTitle">Streak +1</h1>
+  <p class="sub" id="streakSub">Day 1</p>
+  <div class="stats-row">
+    <div class="stat-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path></svg>
+      <span class="num" id="streakDayCounter">0</span>
+      <span class="lbl">Day streak</span>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="streakContinueBtn">Continue</button>
 </div>
 
 <script>
@@ -617,14 +636,16 @@ const feedbackTitle = document.getElementById('feedbackTitle');
 const failureOverlay = document.getElementById('failureOverlay');
 const failureSub = document.getElementById('failureSub');
 let checkMode = 'check'; // 'check' | 'continue' | 'retry'
-const toast = document.getElementById('toast');
-const toastXp = document.getElementById('toastXp');
-const toastCoin = document.getElementById('toastCoin');
+const comboLabel = document.getElementById('comboLabel');
+let comboLabelTimer = null;
 const successScreen = document.getElementById('successScreen');
 const totalXpEl = document.getElementById('totalXp');
 const totalCoinsEl = document.getElementById('totalCoins');
 const continueBtn = document.getElementById('continueBtn');
-
+const streakScreen = document.getElementById('streakScreen');
+const streakTitle = document.getElementById('streakTitle');
+const streakSub = document.getElementById('streakSub');
+const streakDayCounter = document.getElementById('streakDayCounter');
 const successSound = new Audio('assets/sound/success.mp3');
 const failSound = new Audio('assets/sound/fail.mp3');
 successSound.preload = 'auto';
@@ -797,6 +818,12 @@ clearBtn.addEventListener('click', ()=>{
   switchToCheck();
 });
 
+document.getElementById('exitBtn').addEventListener('click', ()=>{
+  comboStreak = 0;
+  persistProgress({ xp:totalXp, coins:totalCoins, current_round:roundIndex });
+  window.location.href = 'home.html';
+});
+
 /* ---------------- scoring ---------------- */
 function scoreStroke(){
   const rect = canvasWrap.getBoundingClientRect();
@@ -896,10 +923,13 @@ function updateHeader(){
   roundTitle.textContent = rounds[roundIndex].title;
 }
 function showToast(xp, coins, isCombo){
-  toastXp.textContent = (isCombo ? 'Combo! +' : '+') + xp + ' XP';
-  toastCoin.textContent = '+' + coins;
-  toast.classList.add('show');
-  setTimeout(()=> toast.classList.remove('show'), isCombo ? 2200 : 1400);
+  if(!isCombo || comboStreak < 1) return;
+  clearTimeout(comboLabelTimer);
+  comboLabel.classList.remove('show');
+  void comboLabel.offsetWidth; // restart animation if triggered again quickly
+  comboLabel.textContent = 'Combo ' + comboStreak + '';
+  comboLabel.classList.add('show');
+  comboLabelTimer = setTimeout(()=> comboLabel.classList.remove('show'), 1800);
 }
 
 /* ---------------- check / continue / retry button state machine ---------------- */
@@ -936,11 +966,6 @@ function advanceRound(){
   let xp = isReviewMode ? 0 : parseInt(checkBtn.dataset.xp || 10, 10);
   let coins = isReviewMode ? 0 : parseInt(checkBtn.dataset.coins || 5, 10);
   const isCombo = !isReviewMode && checkBtn.dataset.combo === '1';
-  if(isCombo){
-    xp += 10;
-    coins += 5;
-    comboStreak = 0; // pay out once, then restart the streak count
-  }
   totalXp += xp;
   totalCoins += coins;
   if(!isReviewMode){
@@ -950,7 +975,10 @@ function advanceRound(){
 
   if(roundIndex === rounds.length-1){
     persistProgress({ completed:true, xp:totalXp, coins:totalCoins, current_round:roundIndex });
-    setTimeout(showSuccess, 500);
+    updateStreak().then(function(result){
+      pendingStreakResult = result;
+      setTimeout(showSuccess, 500);
+    });
     // no need to re-enable — success screen takes over navigation
   } else {
     roundIndex++;
@@ -985,17 +1013,17 @@ checkBtn.addEventListener('click', ()=>{
     playSound(successSound);
     checkBtn.dataset.xp = 15;
     checkBtn.dataset.coins = 8;
-    checkBtn.dataset.combo = comboStreak >= 3 ? '1' : '0';
+    checkBtn.dataset.combo = '1';
     switchToContinue();
   } else if(score >= 60){
-    comboStreak = 0;
+    comboStreak++;
     feedbackIcon.innerHTML = ICONS.check;
     feedbackTitle.textContent = goodPhrases[Math.floor(Math.random()*goodPhrases.length)];
     feedbackOverlay.classList.add('show');
     playSound(successSound);
     checkBtn.dataset.xp = 10;
     checkBtn.dataset.coins = 5;
-    checkBtn.dataset.combo = '0';
+    checkBtn.dataset.combo = '1';
     switchToContinue();
   } else {
     comboStreak = 0;
@@ -1047,14 +1075,25 @@ function showSuccess(){
   successScreen.classList.add('show');
   countUp(totalXpEl, totalXp, 900);
   countUp(totalCoinsEl, totalCoins, 900);
+
+  // If streak was already logged today, show it quietly here instead
+  // of the animated streak screen (per spec: no repeat animation/day).
+  const line = document.getElementById('victoryStreakLine');
+  const text = document.getElementById('victoryStreakText');
+  if(pendingStreakResult && !pendingStreakResult.increased){
+    text.textContent = 'Day ' + pendingStreakResult.streak;
+    line.style.display = 'flex';
+  } else {
+    line.style.display = 'none';
+  }
 }
 
 continueBtn.addEventListener('click', ()=>{
-  window.location.href = 'home.html';
+  successScreen.classList.remove('show');
+  showStreakAnimation(pendingStreakResult);
 });
 
-document.getElementById('exitBtn').addEventListener('click', ()=>{
-  persistProgress({ xp:totalXp, coins:totalCoins, current_round:roundIndex });
+document.getElementById('streakContinueBtn').addEventListener('click', ()=>{
   window.location.href = 'home.html';
 });
 
@@ -1138,6 +1177,7 @@ function updateHeartUI(){
     checkBtn.disabled = true;
     drawCanvas.style.pointerEvents = 'none';
     clearInterval(idleTimer);
+    comboStreak = 0;
   } else {
     drawCanvas.style.pointerEvents = 'auto';
     if(checkMode === 'check') checkBtn.disabled = !hasDrawn;
@@ -1177,6 +1217,92 @@ async function addCoins(amount){
   if(isReviewMode) return;
   totalCoinsSaved += amount;
   await saveProfileState();
+}
+
+/* ==================== STREAK MODULE ====================
+   All streak math happens in Supabase (record_lesson_completion),
+   using the DB server's clock. These client functions only call
+   that RPC and render the result — they never compute the streak
+   themselves, so spoofing the device clock has no effect. */
+
+let pendingStreakResult = null;
+
+// Loads the currently saved streak (for display only — not authoritative)
+async function loadStreak(){
+  if(!currentUserId) return { streak:0, longest_streak:0 };
+  try{
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('current_streak, longest_streak')
+      .eq('id', currentUserId)
+      .maybeSingle();
+    if(error || !data) return { streak:0, longest_streak:0 };
+    return { streak:data.current_streak || 0, longest_streak:data.longest_streak || 0 };
+  } catch(e){
+    return { streak:0, longest_streak:0 };
+  }
+}
+
+// Called once, exactly when a lesson is completed.
+// Server decides whether the streak actually increases.
+async function updateStreak(){
+  if(isReviewMode || !currentUserId) return null;
+  try{
+    const { data, error } = await supabaseClient.rpc('record_lesson_completion', {
+      p_user_id: currentUserId
+    });
+    if(error) return null;
+    saveStreak(data);
+    return data;
+  } catch(e){
+    return null;
+  }
+}
+
+// checkMissedDays / useFreeze are handled server-side inside the RPC
+// (the ELSE branch there is the "missed day" path, and freeze usage
+// is applied automatically when streak_freeze_count > 0). Kept here
+// as thin pass-throughs in case you want to call them explicitly.
+function checkMissedDays(result){
+  return !!result && !result.first_time && result.increased && result.used_freeze === false && result.streak === 1;
+}
+function useFreeze(result){
+  return !!result && result.used_freeze;
+}
+
+// Cache streak locally purely for instant UI paint (not for logic)
+function saveStreak(result){
+  if(!result) return;
+  try{
+    localStorage.setItem('sketchquest_streak_cache', JSON.stringify({
+      streak: result.streak,
+      longest_streak: result.longest_streak
+    }));
+  } catch(e){}
+}
+
+function showMilestone(streak){
+  if(streak > 0 && streak % 7 === 0){
+    streakSub.textContent = 'Day ' + streak + ' — one week strong!';
+  }
+}
+
+// Renders the post-victory streak screen (fire pop + count-up + bounce),
+// reusing the existing trophy-badge / success-screen styles/animations.
+function showStreakAnimation(result){
+  if(!result){ window.location.href = 'home.html'; return; }
+
+  if(!result.increased){
+    // Already counted today — no animation, just land on home.
+    window.location.href = 'home.html';
+    return;
+  }
+
+  streakTitle.textContent = result.first_time ? 'Your journey begins!' : 'Streak +1';
+  streakSub.textContent = 'Day ' + result.streak;
+  streakScreen.classList.add('show');
+  countUp(streakDayCounter, result.streak, 700);
+  showMilestone(result.streak);
 }
 
 function saveOnExitOrRefresh(){
