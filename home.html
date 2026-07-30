@@ -248,7 +248,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:default;
+  cursor:pointer;
   box-shadow:0 var(--shadow-off) 0 var(--ink);
   background:var(--cream);
   animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) both;
@@ -401,7 +401,7 @@ body{
 /* lesson preview popup, shown under a clicked node */
 .lesson-popup{
   position:absolute;
-  top:100%;
+  top:70%;
   left:50%;
   transform:translateX(-50%);
   margin-top:14px;
@@ -424,7 +424,7 @@ body{
 }
 .lesson-popup .popup-arrow{
   position:absolute;
-  top:-11px;
+  top:-10px;
   left:50%;
   transform:translateX(-50%) rotate(45deg);
   width:16px; height:16px;
@@ -476,12 +476,12 @@ body{
   background:var(--lockgray);
   color:var(--gray);
   cursor:not-allowed;
-  box-shadow:0 4px 0 #C2BBA9;
+  box-shadow:0 4px 0 var(--ink);
 }
 .lesson-popup .popup-start:disabled svg{ stroke:var(--gray); }
 .lesson-popup .popup-start:disabled:active{
   transform:translateY(0);
-  box-shadow:0 4px 0 #C2BBA9;
+  box-shadow:0 4px 0 var(--ink);
 }
 </style>
 </head>
@@ -498,8 +498,13 @@ body{
 </div>
 
 <div class="stats-badge" id="statsBadge">
+  <span class="stat-pill streak-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
+    </svg>
+    <span id="streakCount">0</span>
+  </span>
   <span class="stat-pill coin-pill">
-    
 
 <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect width="25" height="24" rx="12" transform="matrix(-1 0 0 1 25 0)" fill="black"/>
@@ -729,9 +734,10 @@ function renderAvatarInto(el, profile, username){
 function renderStats(profile){
   const coins = (profile && typeof profile.coins === 'number') ? profile.coins : 0;
   const hearts = (profile && typeof profile.hearts === 'number') ? profile.hearts : 5;
+  const streak = (profile && typeof profile.current_streak === 'number') ? profile.current_streak : 0;
   document.getElementById('coinCount').textContent = coins;
   document.getElementById('heartCount').textContent = hearts;
-
+  document.getElementById('streakCount').textContent = streak;
   // dim the heart icon fill when out of hearts, without touching layout/size
   const heartSvg = document.querySelector('.heart-pill svg');
   if(heartSvg){
@@ -808,7 +814,7 @@ function cacheProfile(p){
   const [{ data: profileRow }, { data: rows, error }] = await Promise.all([
     supabaseClient
       .from('profiles')
-      .select('avatar_type, avatar_illustration, avatar_url, coins, hearts, decoration_equipped')
+     .select('avatar_type, avatar_illustration, avatar_url, coins, hearts, current_streak, decoration_equipped')
       .eq('id', session.user.id)
       .single(),
     supabaseClient
