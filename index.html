@@ -120,6 +120,80 @@ function isValidUsername(u) {
   return /^[a-zA-Z0-9_.]{3,20}$/.test(u);
 }
 
+const usernameStatus = document.getElementById('usernameStatus');
+const checkIcon = document.getElementById('usernameCheckIcon');
+const crossIcon = document.getElementById('usernameCrossIcon');
+const spinnerIcon = document.getElementById('usernameSpinnerIcon');
+const usernameHint = document.getElementById('usernameHint');
+let usernameIsAvailable = false;
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function resetUsernameIcons() {
+  checkIcon.style.display = 'none';
+  crossIcon.style.display = 'none';
+  spinnerIcon.style.display = 'none';
+}
+
+const checkUsernameAvailability = debounce(async (rawUsername) => {
+  const username = rawUsername.trim();
+  usernameHint.classList.remove('error-text', 'success-text');
+
+  if (!isValidUsername(username)) {
+    resetUsernameIcons();
+    usernameIsAvailable = false;
+    usernameInput.classList.remove('error');
+    if (username.length > 0) {
+      usernameHint.textContent = '3-20 characters: letters, numbers, _ or . only.';
+      usernameHint.classList.add('error-text');
+      usernameInput.classList.add('error');
+    } else {
+      usernameHint.textContent = '';
+    }
+    return;
+  }
+
+  resetUsernameIcons();
+  spinnerIcon.style.display = 'block';
+  usernameHint.textContent = 'Checking availability...';
+  usernameInput.classList.remove('error');
+
+  const { data: existing } = await supabaseClient
+    .from('profiles')
+    .select('id')
+    .eq('username', username.toLowerCase())
+    .maybeSingle();
+
+  // Ignore stale responses if the input has changed since this call fired
+  if (usernameInput.value.trim() !== username) return;
+
+  resetUsernameIcons();
+
+  if (existing) {
+    crossIcon.style.display = 'block';
+    usernameHint.textContent = 'That username is already taken.';
+    usernameHint.classList.add('error-text');
+    usernameInput.classList.add('error');
+    usernameIsAvailable = false;
+  } else {
+    checkIcon.style.display = 'block';
+    usernameHint.textContent = 'Username is available!';
+    usernameHint.classList.add('success-text');
+    usernameInput.classList.remove('error');
+    usernameIsAvailable = true;
+  }
+}, 450);
+
+usernameInput.addEventListener('input', () => {
+  checkUsernameAvailability(usernameInput.value);
+});
+
 googleBtn.addEventListener('click', async () => {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
