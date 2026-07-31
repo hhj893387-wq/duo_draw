@@ -42,6 +42,17 @@
           <label for="username">Username</label>
           <div class="input-wrap">
             <input type="text" id="username" placeholder="Pick a username" autocomplete="username" required />
+            <span class="username-status" id="usernameStatus" aria-hidden="true">
+              <svg id="usernameCheckIcon" class="status-icon icon-check" viewBox="0 0 24 24" style="display:none">
+                <path d="M5 13l4 4L19 7" stroke="#2E6B1F" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <svg id="usernameCrossIcon" class="status-icon icon-cross" viewBox="0 0 24 24" style="display:none">
+                <path d="M6 6l12 12M18 6L6 18" stroke="#B4213A" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <svg id="usernameSpinnerIcon" class="status-icon icon-spinner" viewBox="0 0 24 24" style="display:none">
+                <circle cx="12" cy="12" r="9" stroke="#8A8378" stroke-width="3" fill="none" stroke-dasharray="40" stroke-linecap="round"/>
+              </svg>
+            </span>
           </div>
           <div class="hint" id="usernameHint"></div>
         </div>
@@ -55,7 +66,7 @@
           <div class="strength-row" id="strengthRow">
             <div class="bar"></div><div class="bar"></div><div class="bar"></div>
           </div>
-          <div class="hint" id="pwHint"></div>
+          <div class="hint" id="pwHint">At least 6 characters, with 1 symbol (!@#$...)</div>
         </div>
 
         <label class="terms">
@@ -123,16 +134,42 @@ togglePw.addEventListener('click', () => {
   togglePw.textContent = isPw ? 'HIDE' : 'SHOW';
 });
 
+const pwHint = document.getElementById('pwHint');
+
+function isValidPassword(p) {
+  return p.length >= 6 && /[^A-Za-z0-9]/.test(p);
+}
+
 pwInput.addEventListener('input', () => {
   const v = pwInput.value;
+  const hasLength = v.length >= 6;
+  const hasSymbol = /[^A-Za-z0-9]/.test(v);
+
   let score = 0;
-  if (v.length >= 6) score++;
-  if (/[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
-  if (v.length >= 10 && /[^A-Za-z0-9]/.test(v)) score++;
+  if (hasLength) score++;
+  if (hasLength && hasSymbol) score++;
+  if (v.length >= 10 && hasSymbol && /[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
   strengthBars.forEach((bar, i) => {
     bar.className = 'bar';
     if (i < score) bar.classList.add(`on-${score}`);
   });
+
+  pwInput.classList.remove('error');
+  pwHint.classList.remove('error-text', 'success-text');
+
+  if (v.length === 0) {
+    pwHint.textContent = 'At least 6 characters, with 1 symbol (!@#$...)';
+  } else if (!hasLength) {
+    const left = 6 - v.length;
+    pwHint.textContent = `${left} more character${left === 1 ? '' : 's'} needed`;
+    pwHint.classList.add('error-text');
+  } else if (!hasSymbol) {
+    pwHint.textContent = 'Add a symbol, e.g. ! @ # $ %';
+    pwHint.classList.add('error-text');
+  } else {
+    pwHint.textContent = "Nice, that's a valid password!";
+    pwHint.classList.add('success-text');
+  }
 });
 
 form.addEventListener('submit', async (e) => {
@@ -149,11 +186,18 @@ form.addEventListener('submit', async (e) => {
   let hasError = false;
   if (!isValidUsername(username)) {
     document.getElementById('usernameHint').textContent = '3-20 characters: letters, numbers, _ or . only.';
+    usernameHint.classList.add('error-text');
+    usernameInput.classList.add('error');
+    hasError = true;
+  } else if (!usernameIsAvailable) {
+    document.getElementById('usernameHint').textContent = 'That username is already taken.';
+    usernameHint.classList.add('error-text');
     usernameInput.classList.add('error');
     hasError = true;
   }
-  if (password.length < 6) {
-    document.getElementById('pwHint').textContent = 'Use at least 6 characters.';
+  if (!isValidPassword(password)) {
+    document.getElementById('pwHint').textContent = 'Use at least 6 characters, with 1 symbol (!@#$...).';
+    pwHint.classList.add('error-text');
     pwInput.classList.add('error');
     hasError = true;
   }
@@ -178,6 +222,81 @@ form.addEventListener('submit', async (e) => {
     usernameInput.classList.add('error');
     return;
   }
+
+
+const usernameStatus = document.getElementById('usernameStatus');
+const checkIcon = document.getElementById('usernameCheckIcon');
+const crossIcon = document.getElementById('usernameCrossIcon');
+const spinnerIcon = document.getElementById('usernameSpinnerIcon');
+const usernameHint = document.getElementById('usernameHint');
+let usernameIsAvailable = false;
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function resetUsernameIcons() {
+  checkIcon.style.display = 'none';
+  crossIcon.style.display = 'none';
+  spinnerIcon.style.display = 'none';
+}
+
+const checkUsernameAvailability = debounce(async (rawUsername) => {
+  const username = rawUsername.trim();
+  usernameHint.classList.remove('error-text', 'success-text');
+
+  if (!isValidUsername(username)) {
+    resetUsernameIcons();
+    usernameIsAvailable = false;
+    usernameInput.classList.remove('error');
+    if (username.length > 0) {
+      usernameHint.textContent = '3-20 characters: letters, numbers, _ or . only.';
+      usernameHint.classList.add('error-text');
+      usernameInput.classList.add('error');
+    } else {
+      usernameHint.textContent = '';
+    }
+    return;
+  }
+
+  resetUsernameIcons();
+  spinnerIcon.style.display = 'block';
+  usernameHint.textContent = 'Checking availability...';
+  usernameInput.classList.remove('error');
+
+  const { data: existing } = await supabaseClient
+    .from('profiles')
+    .select('id')
+    .eq('username', username.toLowerCase())
+    .maybeSingle();
+
+  // Ignore stale responses if the input has changed since this call fired
+  if (usernameInput.value.trim() !== username) return;
+
+  resetUsernameIcons();
+
+  if (existing) {
+    crossIcon.style.display = 'block';
+    usernameHint.textContent = 'That username is already taken.';
+    usernameHint.classList.add('error-text');
+    usernameInput.classList.add('error');
+    usernameIsAvailable = false;
+  } else {
+    checkIcon.style.display = 'block';
+    usernameHint.textContent = 'Username is available!';
+    usernameHint.classList.add('success-text');
+    usernameInput.classList.remove('error');
+    usernameIsAvailable = true;
+  }
+}, 450);
+
+usernameInput.addEventListener('input', () => {
+  checkUsernameAvailability(usernameInput.value);
+});
 
   // Supabase Auth requires an email under the hood — we synthesize one
   // from the username so the user never sees or types an email.
