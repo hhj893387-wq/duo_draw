@@ -222,10 +222,15 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
 .hint{
   font-size:12.5px;
   font-weight:700;
-  color:var(--coral);
+  color:var(--gray);
   margin-top:6px;
   min-height:14px;
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
+.hint.error-text{ color:var(--coral); }
+.hint.success-text{ color:#2E6B1F; }
 
 .toggle-eye{
   position:absolute;
@@ -291,6 +296,26 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   color:var(--blue);
 }
 .btn.btn-outline:hover{ background:#EFF4FF; }
+
+.username-status{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  width:22px;
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+.status-icon{ width:20px; height:20px; }
+.icon-spinner{ animation: spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.input-wrap:has(.username-status) input{
+  padding-right:44px;
+}
 
 .divider{
   display:flex;
