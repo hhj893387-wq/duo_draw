@@ -53,19 +53,68 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   border-right:4px solid var(--ink);
 }
 
-.stripe-band{
+/* flat dot-grid texture — no blur, matches the "flat/chunky" system */
+.brand-texture{
   position:absolute;
   inset:0;
   z-index:0;
+  background-image:radial-gradient(var(--coral) 2px, transparent 2px);
+  background-size:28px 28px;
+  opacity:.16;
 }
-.stripe-band .s1,.stripe-band .s2,.stripe-band .s3{
-  position:absolute;
-  border-radius:50%;
-}
-.stripe-band .s1{ width:340px; height:340px; background:var(--coral); top:-90px; left:-90px; }
-.stripe-band .s2{ width:220px; height:220px; background:var(--yellow); bottom:-70px; right:-60px; }
-.stripe-band .s3{ width:140px; height:140px; background:var(--yellow); top:60%; left:-40px; opacity:.9; }
 
+/* ---- sketch card: the signature element, grounded in the actual product ---- */
+.sketch-card{
+  position:relative;
+  z-index:2;
+  width:220px;
+  margin:0 auto 22px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:18px 18px 14px;
+  transform:rotate(-3deg);
+  animation:sketchFloat 3.2s ease-in-out infinite;
+}
+@keyframes sketchFloat{
+  0%,100%{ transform:rotate(-3deg) translateY(0); }
+  50%{ transform:rotate(-1deg) translateY(-8px); }
+}
+
+.sketch-card svg{ display:block; width:100%; height:auto; }
+
+.sketch-card__path{
+  fill:none;
+  stroke:var(--ink);
+  stroke-width:4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:340;
+  stroke-dashoffset:340;
+  animation:drawLine 2.4s ease forwards 0.4s infinite;
+}
+@keyframes drawLine{
+  0%{ stroke-dashoffset:340; }
+  55%{ stroke-dashoffset:0; }
+  85%{ stroke-dashoffset:0; }
+  100%{ stroke-dashoffset:-340; }
+}
+
+.sketch-card__label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:2px dashed var(--line);
+  font-weight:800;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--gray);
+}
+.sketch-card__label span{ color:var(--coral); }
 .brand-content{
   position:relative;
   z-index:2;
@@ -74,16 +123,19 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
 }
 
 .brand-logo{
+  position:absolute;
+  top:30px;
+  left:18px;
+  z-index:3;
   display:flex;
   align-items:center;
-  justify-content:center;
-  gap:10px;
-  margin-bottom:8px;
+  gap:8px;
 }
 .brand-logo span{
-  font-size:28px;
+  font-size:22px;
   font-weight:800;
-  letter-spacing:.5px;
+  letter-spacing:.3px;
+  color:var(--white);
 }
 
 .mascot-wrap{
@@ -105,8 +157,50 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   margin-bottom:10px;
 }
 
+
+/* ---- mascot wiggle: swaps the old draw-line animation for the worm ---- */
+.mascot-svg{
+  display:block;
+  width:64px;
+  height:auto;
+  margin:0 auto;
+  animation:wiggle 1.8s ease-in-out infinite;
+  transform-origin:50% 50%;
+}
+@keyframes wiggle{
+  0%,100%{ transform:rotate(-6deg) translateX(0); }
+  50%{ transform:rotate(6deg) translateX(3px); }
+}
+
+
+/* ---- hero type: headline doubles as the mascot's runway ---- */
+/* ---- hero lockup: single vector, worm + hand-set type baked in together ---- */
+.hero-lockup{
+  display:block;
+  width:min(85vw, 290px);
+  height:auto;
+  margin:0 auto;
+
+  transform-origin:55% 65%; /* pivots near the worm's head, not the text */
+}
+
+
+/* ---- eye icon toggle: replaces SHOW/HIDE text button ---- */
+.toggle-eye{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:32px;
+  height:32px;
+  padding:0;
+}
+.toggle-eye .eye-icon{
+  width:20px;
+  height:20px;
+}
+
 .brand-panel p{
-  font-size:16px;
+  font-size:15px;
   font-weight:700;
   color:var(--ink);
   background:var(--yellow);
@@ -114,8 +208,8 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   padding:8px 18px;
   border-radius:999px;
   border:3px solid var(--ink);
+  margin-top:18px;
 }
-
 .streak-row{
   display:flex;
   gap:10px;
@@ -201,19 +295,20 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   background:var(--white);
   color:var(--ink);
   outline:none;
-  transition:transform .12s ease, background .12s ease;
+  --stroke:var(--ink);
+  transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
 }
 .input-wrap input::placeholder{ color:#BFB8A9; font-weight:600; }
 .input-wrap input:focus{
   background:#FFF7DD;
   transform:translate(-2px,-2px);
-  box-shadow:4px 4px 0 var(--ink);
+  box-shadow:4px 4px 0 var(--stroke);
 }
 .input-wrap input.error{
   border-color:var(--coral);
   background:#FFEDEF;
+  --stroke:var(--coral);
 }
-
 /* Reserve space so typed text never runs under the SHOW/HIDE toggle */
 .input-wrap:has(.toggle-eye) input{
   padding-right:64px;
@@ -355,16 +450,23 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   display:none;
   align-items:center;
   gap:10px;
-  padding:12px 14px;
+  padding:12px 16px;
   border-radius:var(--radius-sm);
   border:3px solid var(--ink);
+  box-shadow:4px 4px 0 var(--ink);
   font-weight:800;
   font-size:14px;
   margin-bottom:18px;
 }
 .banner.show{ display:flex; }
-.banner.success{ background:#E9FBD8; color:#2E6B1F; }
-.banner.error{ background:#FFEDEF; color:#B4213A; }
+.banner.success{ background:#8FD44C; color:var(--ink); }
+.banner.error{ background:var(--coral); color:var(--white); }
+
+.banner-icon{
+  flex-shrink:0;
+  width:20px;
+  height:20px;
+}
 
 .strength-row{
   display:flex;
@@ -461,4 +563,28 @@ p,label,input,button,a,span{ font-family:'Nunito',sans-serif; }
   .terms{ font-size:12px; }
   .switch-line{ font-size:13px; margin-top:20px; }
   .divider{ margin:18px 0; }
+}
+
+.terms.shake{
+  animation: termsShake .4s ease;
+}
+@keyframes termsShake{
+  0%,100%{ transform:translateX(0); }
+  20%{ transform:translateX(-6px); }
+  40%{ transform:translateX(6px); }
+  60%{ transform:translateX(-4px); }
+  80%{ transform:translateX(4px); }
+}
+
+.terms input.pop{
+  animation: termsPop .3s ease;
+}
+@keyframes termsPop{
+  0%{ transform:scale(1); }
+  50%{ transform:scale(1.35); }
+  100%{ transform:scale(1); }
+}
+
+#termsHint{
+  margin-top:-8px;
 }
