@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wigglydraw — Free to learn. Free to draw.</title>
+<style>
+/* ==========================================================================
+   wigglydraw — landing page styles
+   Colors, type, and spacing derived from the source design reference.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --cream: #fffcf5;
+  --pink: #fe6474;
+  --pink-hover: #ff4d60;
+  --blue: #4279da;
+  --blue-hover: #3568c4;
+  --yellow: #ffd100;
+  --dark: #242424;
+  --heading: #383838;
+  --body-gray: #555555;
+  --black: #000000;
+
+  --font: 'Baloo 2', ui-rounded, 'Segoe UI', sans-serif;
+  --container: 1440px;
+  --nav-h: 88px;
+  --shadow-off: 5px;
+  --shadow-off-sm: 4px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--cream);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.wrap {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 3px solid var(--black);
+  padding: 12px 22px;
+  cursor: pointer;
+  box-shadow: 0 var(--shadow-off) 0 var(--black);
+  transform: translateY(0);
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+  margin-bottom: var(--shadow-off);
+  will-change: transform;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 var(--black);
+}
+
+.btn:active {
+  transform: translateY(var(--shadow-off));
+  box-shadow: 0 0 0 var(--black);
+}
+
+.btn-primary {
+  background: var(--pink);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--pink-hover);
+}
+
+.btn-outline {
+  background: #fff;
+  color: var(--dark);
+}
+
+.btn-outline:hover {
+  background: #f5f5f5;
+}
+
+.btn-blue {
+  background: var(--blue);
+  color: #fff;
+}
+
+.btn-blue:hover {
+  background: var(--blue-hover);
+}
+
+.btn-sm {
+  padding: 9px 16px;
+  font-size: 13px;
+  box-shadow: 0 var(--shadow-off-sm) 0 var(--black);
+  margin-bottom: var(--shadow-off-sm);
+}
+
+.btn-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--black);
+}
+
+.btn-sm:active {
+  transform: translateY(var(--shadow-off-sm));
+  box-shadow: 0 0 0 var(--black);
+}
+
+/* ---------- Logo ---------- */
+
+.logo {
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--dark);
+  letter-spacing: -0.5px;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.logo:hover {
+  animation: logo-wiggle 0.6s ease;
+}
+
+@keyframes logo-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg) scale(1.04); }
+  50% { transform: rotate(3deg) scale(1.06); }
+  75% { transform: rotate(-2deg) scale(1.03); }
+}
+
+/* ---------- Top bar (logo only, scrolls with page) ---------- */
+
+.topbar {
+  padding: 40px 0 0;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  padding: 60px 0 70px;
+  overflow: hidden;
+}
+
+.hero-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.hero h1 {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.35;
+  color: var(--heading);
+  margin: 0 0 40px;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: fade-up 0.8s cubic-bezier(.22,1,.36,1) 0.1s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: fade-up 0.8s cubic-bezier(.22,1,.36,1) 0.35s forwards;
+}
+
+.hero-actions .btn {
+  width: 100%;
+  max-width: 260px;
+}
+
+@keyframes fade-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-illustration {
+  position: absolute;
+  bottom: -10px;
+  width: clamp(120px, 15vw, 222px);
+  pointer-events: none;
+  user-select: none;
+  animation: bob 4.5s ease-in-out infinite;
+}
+
+.hero-illustration.left {
+  left: max(2vw, 20px);
+  animation-delay: 0s;
+}
+
+.hero-illustration.right {
+  right: max(2vw, 20px);
+  animation-name: bob-reverse;
+  animation-delay: 0.6s;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(-3deg); }
+}
+
+@keyframes bob-reverse {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+
+/* ---------- Sticky duplicate nav ---------- */
+
+.sitenav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--cream);
+  transition: box-shadow 0.3s ease;
+}
+
+.sitenav.is-visible {
+  box-shadow: 0 4px 0px rgba(36, 36, 36, 1.08);
+}
+
+.sitenav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0;
+}
+
+.sitenav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transform: translateY(-140%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s ease, opacity 0.3s ease;
+}
+
+.sitenav.is-visible .sitenav-actions {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Feature sections ---------- */
+
+.feature {
+  padding: 110px 0;
+}
+
+.feature .wrap {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.feature-media {
+  flex: 0 0 auto;
+  width: 240px;
+  opacity: 0;
+  transform: translateY(40px) scale(0.92);
+  transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+}
+
+.feature-media img {
+  width: 100%;
+  height: auto;
+  animation: float 5s ease-in-out infinite;
+}
+
+.feature-imagine .feature-media img {
+  animation-delay: 0.4s;
+}
+
+.feature-game .feature-media img {
+  animation-delay: 0.8s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.feature-text {
+  flex: 1 1 auto;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(.22,1,.36,1) 0.12s, transform 0.7s cubic-bezier(.22,1,.36,1) 0.12s;
+}
+
+.feature.in-view .feature-media,
+.feature.in-view .feature-text {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.feature-text h2 {
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 1.25;
+  color: var(--heading);
+  margin: 0 0 18px;
+}
+
+.feature-text h2 .accent-pink { color: var(--pink); }
+.feature-text h2 .accent-blue { color: var(--blue); }
+.feature-text h2 .accent-yellow { color: var(--yellow); }
+
+.feature-text p {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.55;
+  color: var(--body-gray);
+  margin: 0;
+  max-width: 560px;
+}
+
+.feature-imagine .wrap {
+  justify-content: flex-end;
+}
+
+.feature-imagine .feature-text {
+  text-align: right;
+  flex: 0 1 640px;
+}
+
+.feature-imagine .feature-text p {
+  margin-left: auto;
+}
+
+.feature-imagine .feature-media {
+  width: 150px;
+}
+
+.feature-game {
+  position: relative;
+}
+
+.feature-game .pencil-deco {
+  position: absolute;
+  top: 20px;
+  right: 8%;
+  width: 90px;
+  transform: rotate(8deg);
+  animation: pencil-wiggle 3.2s ease-in-out infinite;
+  transform-origin: 50% 10%;
+}
+
+@keyframes pencil-wiggle {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(16deg) translateY(-6px); }
+}
+
+/* ---------- CTA / wave section ---------- */
+
+.cta {
+  position: relative;
+  background: var(--cream);
+  overflow: hidden;
+}
+
+.cta-waves {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}
+
+.cta-waves svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cta-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 17vw;
+  text-align: center;
+}
+
+.cta-content h2 {
+  font-family: var(--font);
+  font-weight: 800;
+  color: #fff;
+  font-size: clamp(20px, 3.4vw, 44px);
+  margin: 0 0 3.5vw;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s cubic-bezier(.22,1,.36,1), transform 0.8s cubic-bezier(.22,1,.36,1);
+}
+
+.cta.in-view .cta-content h2 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  background: var(--blue);
+  padding: 40px 0 56px;
+  text-align: center;
+}
+
+.footer p {
+  font-family: var(--font);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .hero-illustration {
+    display: none;
+  }
+
+  .feature .wrap {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .feature-imagine .wrap {
+    flex-direction: column-reverse;
+  }
+
+  .feature-imagine .feature-text {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .feature-imagine .feature-text p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .feature-text h2 {
+    font-size: 30px;
+  }
+
+  .feature-text p {
+    font-size: 18px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .feature-media {
+    width: 170px;
+  }
+
+  .feature-game .pencil-deco {
+    display: none;
+  }
+
+  .sitenav-actions .btn span.full {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .wrap {
+    padding: 0 22px;
+  }
+
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 10px 18px;
+  }
+
+  .sitenav-inner {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 18px 0 14px;
+  }
+
+  .sitenav-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .feature {
+    padding: 70px 0;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .sitenav-inner,
+  .btn,
+  .logo,
+  .hero h1,
+  .hero-actions,
+  .hero-illustration,
+  .feature-media img,
+  .feature-media,
+  .feature-text,
+  .pencil-deco,
+  .cta-content h2 {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------- Focus states ---------- */
+
+.btn:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+</style>
+</head>
+<body>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="wrap topbar">
+      <a href="index.html" class="logo"></a>
+    </div>
+
+    <div class="hero-inner">
+      <h1>Free to learn. Free to draw.<br>Free to Be Wiggly.</h1>
+      <div class="hero-actions">
+        <a href="signup.html" class="btn btn-primary" id="hero-get-started">get started</a>
+        <a href="login.html" class="btn btn-outline">already have an account?</a>
+      </div>
+    </div>
+
+    <img src="assets/landingpage/worm-left.svg" alt="" class="hero-illustration left" aria-hidden="true">
+    <img src="assets/landingpage/worm-right.svg" alt="" class="hero-illustration right" aria-hidden="true">
+  </header>
+
+  <!-- ============ STICKY DUPLICATE NAV ============ -->
+  <!-- Hidden until the hero's own buttons scroll out of view, then slides in and stays fixed. -->
+  <nav class="sitenav" id="sitenav">
+    <div class="wrap sitenav-inner">
+      <a href="index.html" class="logo">wigglydraw</a>
+      <div class="sitenav-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">already have an account?</a>
+        <a href="signup.html" class="btn btn-primary btn-sm">get started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ FEATURE: Learning to draw became easier ============ -->
+  <section class="feature feature-learn">
+    <div class="wrap">
+      <div class="feature-media">
+        <img src="assets/landingpage/easel.svg" alt="An illustrated easel with a blank canvas">
+      </div>
+      <div class="feature-text">
+        <h2>Learning to draw became <span class="accent-pink">easier</span>.</h2>
+        <p>We've designed special courses for beginner, intermediate, and pro artists, so anyone can learn to draw at their own level.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURE: draw anything you imagine ============ -->
+  <section class="feature feature-imagine">
+    <div class="wrap">
+      <div class="feature-text">
+        <h2>draw anything you <span class="accent-blue">imagine</span>.</h2>
+        <p>Unleash your creativity on an advanced drawing canvas with professional tools</p>
+      </div>
+      <div class="feature-media">
+        <img src="assets/landingpage/brush.svg" alt="An illustrated paintbrush">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURE: Stay in the Game ============ -->
+  <section class="feature feature-game">
+    <img src="assets/landingpage/pencil.svg" alt="" class="pencil-deco" aria-hidden="true">
+    <div class="wrap">
+      <div class="feature-media">
+        <img src="assets/landingpage/controller.svg" alt="An illustrated game controller">
+      </div>
+      <div class="feature-text">
+        <h2>Stay in the <span class="accent-yellow">Game</span>.</h2>
+        <p>With fun challenges, game-like rewards, and cheerful nudges from Wiggly the Worm, building a drawing habit feels effortless.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA / WAVE SECTION ============ -->
+  <section class="cta">
+    <div class="cta-waves">
+      <svg viewBox="0 0 1440 1064" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 0C0 0 592.5 30 735 140C877.5 250 1440 0 1440 0C1440 454.96 1440 710.04 1440 1165H0V0Z" fill="#FE6474"/>
+        <path d="M0 381C0 381 448 628 688.5 628C929 628 1440 381 1440 381C1440 647.73 1440 797.27 1440 1064H0V381Z" fill="#4279DA"/>
+      </svg>
+      <div class="cta-content">
+        <h2>start your drawing journey</h2>
+        <a href="signup.html" class="btn btn-blue" id="cta-get-started">get started</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© 2026 wigglydraw. Made with a wiggle.</p>
+  </footer>
+
+  <script>
+// wigglydraw — sticky duplicate nav
+// Shows the fixed nav bar once the hero's own "get started" /
+// "already have an account?" buttons have scrolled out of view,
+// and hides it again if the user scrolls back up past them.
+
+(function () {
+  const nav = document.getElementById('sitenav');
+  const heroActions = document.querySelector('.hero-actions');
+
+  if (!nav || !heroActions) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      // Not intersecting + it's above the viewport (scrolled past) => show nav.
+      const scrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      nav.classList.toggle('is-visible', scrolledPast);
+    },
+    {
+      root: null,
+      threshold: 0,
+      rootMargin: '0px',
+    }
+  );
+
+  observer.observe(heroActions);
+})();
+
+// wigglydraw — scroll-reveal micro animations
+// Feature rows and the CTA wave section fade/slide into place the
+// first time they enter the viewport.
+(function () {
+  const targets = document.querySelectorAll('.feature, .cta');
+  if (!targets.length) return;
+
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      root: null,
+      threshold: 0.25,
+      rootMargin: '0px 0px -80px 0px',
+    }
+  );
+
+  targets.forEach((el) => revealObserver.observe(el));
+})();
+  </script>
+</body>
+</html>

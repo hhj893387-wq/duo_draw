@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sketch Quest — Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+:root{
+  --yellow:#FFE053;
+  --coral:#FE6474;
+  --blue:#4279DA;
+  --ink:#2E2A24;
+  --cream:#FFFCF5;
+  --white:#FFFFFF;
+  --gray:#8A8378;
+  --line:#2E2A24;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --shadow-off:6px;
+  --green:#8FD44C;
+  --lockgray:#D9D3C4;
+}
+*{ box-sizing:border-box; }
+
+.user-badge .edit-pencil{
+  width:24px; height:24px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:2px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  cursor:pointer;
+  transition:transform .1s ease;
+}
+.user-badge .edit-pencil svg{ width:13px; height:13px; }
+.user-badge .edit-pencil:hover{ transform:scale(1.08) rotate(-6deg); }
+.user-badge .edit-pencil:active{ transform:scale(.9); }
+
+.user-badge{
+  position:fixed;
+  top:18px;
+  left:18px;
+  z-index:1000;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  box-shadow:3px 3px 0 var(--ink);
+  padding:6px 16px 6px 6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:'Baloo 2','Nunito',sans-serif;
+  font-weight:800;
+  font-size:14px;
+  color:var(--ink);
+}
+.user-badge .avatar{
+  position:relative;
+  overflow:visible;
+  width:36px; height:36px;
+  border-radius:50%;
+  background:var(--yellow);
+  border:2px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+}
+.user-badge .avatar-deco-layer{
+  position:absolute;
+  inset:-45%;
+  pointer-events:none;
+  z-index:2;
+}
+.user-badge .avatar-deco-layer img{
+  width:100%; height:100%;
+  object-fit:contain;
+}
+
+/* stats badge: coins + hearts, sits top-left below the profile badge
+   so it never overlaps the avatar */
+/* stats badge: coins + hearts, sits top-right, mirroring the profile
+   badge's top-left position */
+.stats-badge{
+  position:fixed;
+  top:18px;
+  right:18px;
+  z-index:999;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  box-shadow:3px 3px 0 var(--ink);
+  padding:6px 14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-family:'Baloo 2','Nunito',sans-serif;
+  font-weight:800;
+  font-size:14px;
+  color:var(--ink);
+}
+.stats-badge .stat-pill{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.stats-badge svg{ width:20px; height:20px; flex-shrink:0; }
+
+
+.stats-badge .heart-pill svg.empty-heart{ stroke:var(--lockgray); }
+
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Baloo 2','Nunito',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+}
+.page{
+  max-width:520px;
+  margin:0 auto;
+  padding:28px 20px 80px;
+}
+
+/* ---- top unit banner ---- */
+.unit-banner{
+  position:relative;
+  background:var(--blue);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-md);
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  padding:18px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:56px;
+  color:var(--white);
+  overflow:hidden;
+}
+.unit-banner::before{
+  content:'';
+  position:absolute;
+  width:160px; height:160px;
+  background:var(--coral);
+  border-radius:50%;
+  top:-90px; right:-60px;
+  opacity:.9;
+}
+.unit-banner .txt{ position:relative; z-index:1; }
+.unit-banner .eyebrow{
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--yellow);
+  margin-bottom:4px;
+}
+.unit-banner h1{
+  font-family:'Baloo 2',sans-serif;
+  font-size:22px;
+  margin:0;
+  color:var(--white);
+}
+.unit-banner .badge{
+  position:relative;
+  z-index:1;
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  border-radius:50%;
+  width:56px; height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.unit-banner .badge svg{ width:30px; height:30px; }
+
+/* ---- path ---- */
+.path{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+
+/* svg layer that draws the connecting line under all nodes */
+.path-svg{
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  z-index:0;
+}
+
+.row{
+  position:relative;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  height:150px;
+  opacity:0;
+  transform:translateY(22px);
+  animation:rowIn .55s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes rowIn{
+  to{ opacity:1; transform:translateY(0); }
+}
+.path .row:nth-of-type(1){ animation-delay:.05s; }
+.path .row:nth-of-type(2){ animation-delay:.16s; }
+.path .row:nth-of-type(3){ animation-delay:.27s; }
+.path .row:nth-of-type(4){ animation-delay:.38s; }
+.path .row:nth-of-type(5){ animation-delay:.49s; }
+.path .row:nth-of-type(6){ animation-delay:.6s; }
+
+.row .node-wrap{ position:relative; z-index:1; }
+.row .node-wrap.popup-open{ z-index:50; }
+.row .node-wrap.start-wrap{ z-index:90; }
+
+/* the real fix: each .row keeps a leftover transform from its entrance
+   animation, which makes every row its own stacking context. That traps
+   any z-index set on a node-wrap *inside* that row - it can never rise
+   above a different row's content. So the escalation has to happen on the
+   .row itself, which is what actually competes with sibling rows. */
+.row.popup-active{ z-index:500; }
+.row.row-start{ z-index:200; }
+
+/* gentle horizontal offsets to create the curve, no overlap */
+.row.pos-0 .node-wrap{ transform:translateX(0); }
+.row.pos-1 .node-wrap{ transform:translateX(64px); }
+.row.pos-2 .node-wrap{ transform:translateX(64px); }
+.row.pos-3 .node-wrap{ transform:translateX(0px); }
+.row.pos-4 .node-wrap{ transform:translateX(-64px); }
+.row.pos-5 .node-wrap{ transform:translateX(-64px); }
+.row.pos-6 .node-wrap{ transform:translateX(0); }
+
+/* ---- lesson node ---- */
+.node{
+  position:relative;
+  width:84px; height:84px;
+  border-radius:50%;
+  border:4px solid var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 var(--shadow-off) 0 var(--ink);
+  background:var(--cream);
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) both;
+}
+.node svg{ width:34px; height:34px; }
+@keyframes nodePop{
+  0%{ opacity:0; transform:scale(.3) rotate(-12deg); }
+  55%{ opacity:1; transform:scale(1.14) rotate(5deg); }
+  75%{ transform:scale(.93) rotate(-3deg); }
+  100%{ opacity:1; transform:scale(1) rotate(0deg); }
+}
+/* sync each node's pop with its row's own entrance delay */
+.path .row:nth-of-type(1) .node{ animation-delay:.05s; }
+.path .row:nth-of-type(2) .node{ animation-delay:.16s; }
+.path .row:nth-of-type(3) .node{ animation-delay:.27s; }
+.path .row:nth-of-type(4) .node{ animation-delay:.38s; }
+.path .row:nth-of-type(5) .node{ animation-delay:.49s; }
+.path .row:nth-of-type(6) .node{ animation-delay:.6s; }
+
+.node.done{ background:var(--green); }
+.node.done svg{ stroke:var(--ink); }
+
+/* the current node pops in like every other node, then hands off (no time
+   overlap, so no fighting over the transform property) into a continuous,
+   slightly rotated bob for extra character */
+.node.current{
+  background:var(--coral);
+  width:96px; height:96px;
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) .05s both,
+            currentBob 2.2s ease-in-out .65s infinite;
+  /* two values here map 1:1 to the two animations above: nodePop always
+     runs once on entrance, currentBob starts paused and only turns on
+     while the node is actually visible (see IntersectionObserver below) */
+  animation-play-state: running, paused;
+}
+.node.current.in-view{
+  animation-play-state: running, running;
+}
+.node.current svg{ width:40px; height:40px; stroke:var(--white); }
+@keyframes currentBob{
+  0%,100%{ transform:translateY(0) rotate(0deg) scale(1); }
+  50%{ transform:translateY(-7px) rotate(3deg) scale(1.05); }
+}
+
+.node.locked{
+  background:var(--lockgray);
+  box-shadow:0 var(--shadow-off) 0 #C2BBA9;
+  border-color:#B7AF9C;
+}
+.node.locked svg{ stroke:#A79F8E; }
+
+.node:not(.locked):not(.current){ transition:transform .12s ease; }
+.node:not(.locked):not(.current):hover{ transform:translateY(-3px) scale(1.04); }
+.node:not(.locked):not(.current):active{ transform:translateY(1px) scale(.94); }
+
+.node.locked-shake{ animation:lockedShake .3s ease; }
+@keyframes lockedShake{
+  0%{ transform:scale(1) rotate(0deg); }
+  15%{ transform:scale(.9) rotate(-7deg); }
+  32%{ transform:scale(1.06) rotate(6deg); }
+  50%{ transform:scale(.96) rotate(-4deg); }
+  68%{ transform:scale(1.02) rotate(2deg); }
+  84%{ transform:scale(.99) rotate(-1deg); }
+  100%{ transform:scale(1) rotate(0deg); }
+}
+
+.node.node-punch{ animation:nodePunch .3s ease; }
+@keyframes nodePunch{
+  0%{ transform:scale(1); }
+  35%{ transform:scale(.82); }
+  65%{ transform:scale(1.12); }
+  100%{ transform:scale(1); }
+}
+
+/* floating "start" pill above current node */
+.start-pill{
+  position:absolute;
+  top:-34px;
+  left:50%;
+  z-index:1000;
+  transform:translateX(-50%);
+  background:var(--yellow);
+  color:var(--ink);
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border-radius:999px;
+  border:3px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);
+  white-space:nowrap;
+  opacity:0;
+  animation:pillPop .5s cubic-bezier(.34,1.56,.64,1) .55s forwards,
+            pillPulse 1.8s ease-in-out 1.15s infinite;
+  animation-play-state: running, paused;
+}
+.start-pill.in-view{
+  animation-play-state: running, running;
+}
+@keyframes pillPop{
+  from{ opacity:0; transform:translateX(-50%) scale(.4); }
+  to{ opacity:1; transform:translateX(-50%) scale(1); }
+}
+@keyframes pillPulse{
+  0%,100%{ transform:translateX(-50%) scale(1); }
+  50%{ transform:translateX(-50%) scale(1.06); }
+}
+
+/* star count under completed nodes */
+.stars{
+  position:absolute;
+  bottom:-14px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:2px;
+}
+.stars svg{ width:12px; height:12px; }
+
+/* chest / bonus node variant */
+.node.chest{
+  background:var(--yellow);
+  border-radius:var(--radius-sm);
+  animation:nodePop .5s cubic-bezier(.34,1.76,.64,1) .49s both,
+            chestWiggle 2.6s ease-in-out 1s infinite;
+  animation-play-state: running, paused;
+}
+.node.chest.in-view{
+  animation-play-state: running, running;
+}
+.node.chest svg{ width:36px; height:36px; }
+@keyframes chestWiggle{
+  0%,100%{ transform:rotate(0deg); }
+  12%{ transform:rotate(-5deg); }
+  26%{ transform:rotate(4deg); }
+  40%{ transform:rotate(-3deg); }
+  54%{ transform:rotate(2deg); }
+  68%{ transform:rotate(0deg); }
+}
+
+/* second unit banner further down */
+.unit-banner.alt{ background:var(--coral); margin-top:12px; margin-bottom:56px; }
+.unit-banner.alt::before{ background:var(--blue); }
+.unit-banner.alt .eyebrow{ color:var(--yellow); }
+
+/* locked nodes are clickable to preview the lesson */
+.node.locked{ cursor:pointer; }
+
+/* lesson preview popup, shown under a clicked node */
+.lesson-popup{
+  position:absolute;
+  top:70%;
+  left:50%;
+  transform:translateX(-50%);
+  margin-top:14px;
+  width:200px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:5px 5px 0 var(--ink);
+  padding:14px 16px 16px;
+  z-index:30;
+  text-align:center;
+  transform-origin:top center;
+  animation:popupIn .18s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popupIn{
+  0%{ opacity:0; transform:translateX(-50%) translateY(-10px) scale(.4) rotate(-6deg); }
+  60%{ opacity:1; transform:translateX(-50%) translateY(2px) scale(1.07) rotate(2deg); }
+  80%{ transform:translateX(-50%) translateY(-1px) scale(.97) rotate(-1deg); }
+  100%{ transform:translateX(-50%) translateY(0) scale(1) rotate(0deg); }
+}
+.lesson-popup .popup-arrow{
+  position:absolute;
+  top:-10px;
+  left:50%;
+  transform:translateX(-50%) rotate(45deg);
+  width:16px; height:16px;
+  background:var(--white);
+  border-left:3px solid var(--ink);
+  border-top:3px solid var(--ink);
+}
+.lesson-popup .popup-title{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  margin:0 0 2px;
+}
+.lesson-popup .popup-sub{
+  font-size:12px;
+  font-weight:700;
+  color:var(--gray);
+  margin:0 0 12px;
+}
+.lesson-popup .popup-start{
+  width:100%;
+  padding:10px 14px;
+  font-family:'Baloo 2',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  color:var(--white);
+  background:var(--coral);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-sm);
+  box-shadow:0 4px 0 var(--ink);
+  cursor:pointer;
+  transform:translateY(0);
+  transition:transform .08s ease, box-shadow .08s ease, background .15s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.lesson-popup .popup-start svg{
+  width:16px; height:16px;
+  flex-shrink:0;
+}
+.lesson-popup .popup-start:hover:not(:disabled){ background:#FF7A8B; }
+.lesson-popup .popup-start:active{
+  transform:translateY(4px);
+  box-shadow:0 0 0 var(--ink);
+}
+.lesson-popup .popup-start:disabled{
+  background:var(--lockgray);
+  color:var(--gray);
+  cursor:not-allowed;
+  box-shadow:0 4px 0 var(--ink);
+}
+.lesson-popup .popup-start:disabled svg{ stroke:var(--gray); }
+.lesson-popup .popup-start:disabled:active{
+  transform:translateY(0);
+  box-shadow:0 4px 0 var(--ink);
+}
+
+/* NEW — add inside the existing <style> block */
+.redirect-overlay{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  background:var(--cream);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .35s ease;
+  opacity:1;
+}
+.redirect-overlay.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+.redirect-lottie{
+  width:160px;
+  height:160px;
+}
+
+</style>
+</head>
+<!-- NEW -->
+<body>
+<div id="redirectOverlay" class="redirect-overlay">
+  <div id="redirectLottie" class="redirect-lottie"></div>
+</div>
+<script>
+  // Runs immediately, before anything else paints — the overlay only
+  // shows if we just arrived here from a successful login/signup.
+  if (sessionStorage.getItem('zippo_show_home_loading') === '1') {
+    document.getElementById('redirectOverlay').style.display = 'flex';
+  }
+</script>
+<div class="user-badge" id="userBadge">
+  <div class="avatar" id="userAvatar">?</div>
+  <span id="userName">Loading...</span>
+  <a class="edit-pencil" href="profile-settings.html" aria-label="Edit profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+    </svg>
+  </a>
+</div>
+
+<div class="stats-badge" id="statsBadge">
+  <span class="stat-pill streak-pill">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2s5 5.5 5 10a5 5 0 0 1-10 0c0-1.3.5-2.3 1-3 .3 1 1 1.5 1.5 1.3C10 9.5 9 8 9 6c1.5 1 3 2.5 3-1z"></path>
+    </svg>
+    <span id="streakCount">0</span>
+  </span>
+  <span class="stat-pill coin-pill">
+
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="25" height="24" rx="12" transform="matrix(-1 0 0 1 25 0)" fill="black"/>
+<rect x="0.5" y="0.500244" width="22.6577" height="21.3522" rx="10.6761" fill="#FF8D28" stroke="#FFCC00"/>
+<path d="M4 9C4 9.55228 3.55228 10 3 10C2.44772 10 2 9.55228 2 9C2 8.44772 2.44772 8 3 8C3.55228 8 4 8.44772 4 9Z" fill="white"/>
+<circle cx="5" cy="6" r="2" fill="white"/>
+<circle cx="5.5" cy="9.5" r="1.5" fill="white"/>
+<rect x="8.96167" y="8.29663" width="1.56645" height="7.31008" transform="rotate(-27.4168 8.96167 8.29663)" fill="#FFCC00"/>
+<rect x="12.8086" y="15.7126" width="3.13289" height="2.08859" rx="1" transform="rotate(-27.4168 12.8086 15.7126)" fill="#FF2D55"/>
+<rect x="10.3522" y="7.57544" width="1.56645" height="7.31008" transform="rotate(-27.4168 10.3522 7.57544)" fill="#FFCC00"/>
+<path d="M9.3905 5.72134L11.7427 6.85406L8.96172 8.29663L9.3905 5.72134Z" fill="#555555"/>
+<rect x="12.3278" y="14.7856" width="3.13289" height="1.0443" transform="rotate(-27.4168 12.3278 14.7856)" fill="white"/>
+</svg>
+
+
+    <span id="coinCount">0</span>
+  </span>
+  <span class="stat-pill heart-pill">
+   
+
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M41.68 9.21999C40.6585 8.198 39.4456 7.38728 38.1107 6.83416C36.7758 6.28103 35.345 5.99634 33.9 5.99634C32.455 5.99634 31.0242 6.28103 29.6893 6.83416C28.3544 7.38728 27.1415 8.198 26.12 9.21999L24 11.34L21.88 9.21999C19.8166 7.15661 17.0181 5.99741 14.1 5.99741C11.1819 5.99741 8.38338 7.15661 6.31999 9.21999C4.25661 11.2834 3.09741 14.0819 3.09741 17C3.09741 19.9181 4.25661 22.7166 6.31999 24.78L24 42.46L41.68 24.78C42.702 23.7585 43.5127 22.5456 44.0658 21.2107C44.6189 19.8758 44.9036 18.445 44.9036 17C44.9036 15.555 44.6189 14.1242 44.0658 12.7893C43.5127 11.4544 42.702 10.2415 41.68 9.21999Z" fill="black" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M39.9434 9.21999C38.9644 8.198 37.8021 7.38728 36.5228 6.83416C35.2435 6.28103 33.8723 5.99634 32.4875 5.99634C31.1028 5.99634 29.7316 6.28103 28.4523 6.83416C27.173 7.38728 26.0106 8.198 25.0317 9.21999L23 11.34L20.9684 9.21999C18.9909 7.15661 16.309 5.99741 13.5125 5.99741C10.716 5.99741 8.0341 7.15661 6.05669 9.21999C4.07928 11.2834 2.96838 14.0819 2.96838 17C2.96838 19.9181 4.07928 22.7166 6.05669 24.78L23 42.46L39.9434 24.78C40.9228 23.7585 41.6997 22.5456 42.2298 21.2107C42.7599 19.8758 43.0327 18.445 43.0327 17C43.0327 15.555 42.7599 14.1242 42.2298 12.7893C41.6997 11.4544 40.9228 10.2415 39.9434 9.21999Z" fill="#FF383C" stroke="#FF383C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="12" cy="14" r="4" fill="white"/>
+<circle cx="18" cy="17" r="2" fill="white"/>
+<circle cx="15" cy="19" r="1" fill="white"/>
+</svg>
+
+
+    <span id="heartCount">5</span>
+  </span>
+</div>
+<div class="page">
+
+  <!-- UNIT 1 -->
+  <div class="unit-banner">
+    <div class="txt">
+      <div class="eyebrow">Unit 1</div>
+      <h1>Shapes &amp; lines</h1>
+    </div>
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        
+        <line x1="12" y1="5" x2="12" y2="1.6"></line>
+      </svg>
+    </div>
+  </div>
+
+  <div class="path">
+    <svg class="path-svg"></svg>
+
+    <!-- Lesson 1 - current / only unlocked lesson -->
+   <div class="row pos-0 row-start">
+      <div class="node-wrap start-wrap">
+        <div class="start-pill">Start</div>
+        <div class="node current" data-title="Warm-up strokes" data-sub="Lesson 1 of 6" data-href="lesson1.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--white)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20l-1.5-1.5C6 14.5 3 12 3 8.6 3 5.9 5.1 4 7.7 4c1.5 0 2.9.7 3.8 1.9L12 6.5l.5-.6c.9-1.2 2.3-1.9 3.8-1.9C18.9 4 21 5.9 21 8.6c0 3.4-3 5.9-7.5 9.9L12 20z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 2 - locked -->
+    <div class="row pos-1">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Basic shapes" data-sub="Lesson 2 of 6" data-href="lesson2.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 3 - locked -->
+    <div class="row pos-2">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Straight lines" data-sub="Lesson 3 of 6" data-href="lesson3.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 4 - locked -->
+    <div class="row pos-3">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Perfect circles" data-sub="Lesson 4 of 6" data-href="lesson4.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bonus chest - locked -->
+    <div class="row pos-4">
+      <div class="node-wrap">
+        <div class="node locked chest" data-title="Bonus challenge" data-sub="Unlocks with lesson 4" data-href="bonus.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="9" width="17" height="11" rx="2"></rect>
+            <path d="M3.5 13h17"></path>
+            <path d="M12 9v11"></path>
+            <path d="M8 9c-1.2-2.2-.4-5 1.7-6 1.3 1.6 1.9 3.7 2.3 6"></path>
+            <path d="M16 9c1.2-2.2.4-5-1.7-6-1.3 1.6-1.9 3.7-2.3 6"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lesson 5 - locked -->
+    <div class="row pos-5">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Proportions" data-sub="Lesson 5 of 6" data-href="lesson5.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"></path>
+            <path d="M4 4l16 16"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- UNIT 2 -->
+  <div class="unit-banner alt">
+    <div class="txt">
+      <div class="eyebrow">Unit 2</div>
+      <h1>Shading &amp; light</h1>
+    </div>
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="path">
+    <svg class="path-svg"></svg>
+
+    <div class="row pos-0 row-start">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Volume basics" data-sub="Lesson 1 of 3" data-href="lesson6.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect>
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pos-1">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Light &amp; shadow" data-sub="Lesson 2 of 3" data-href="lesson7.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18z"></path>
+            <path d="M2 2l7.5 7.5"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pos-2">
+      <div class="node-wrap">
+        <div class="node locked" data-title="Ambient occlusion" data-sub="Lesson 3 of 3" data-href="lesson8.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#A79F8E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a9 9 0 1 0 9 9c0-1-1-1.5-2-1a4 4 0 0 1-6-5c.5-1 0-2-1-2z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- NEW -->
+<script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="decorations-config.js"></script>
+<script>
+  if (document.getElementById('redirectOverlay').style.display === 'flex') {
+    lottie.loadAnimation({
+      container: document.getElementById('redirectLottie'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'assets/loading.json'
+    });
+  }
+</script>
+<script>
+const LESSON_ORDER = ['lesson1','lesson2','lesson3','lesson4','lesson5','lesson6','lesson7','lesson8'];
+const PROGRESS_CACHE_KEY = 'sketchquest_progress_cache';
+
+/* Avatar priority: uploaded pic > selected illustration > first letter of username */
+function renderAvatarInto(el, profile, username){
+  el.innerHTML = '';
+  el.style.background = '';
+  if(profile && profile.avatar_type === 'upload' && profile.avatar_url){
+    el.style.background = 'transparent';
+    var img = document.createElement('img');
+    img.src = profile.avatar_url;
+    img.alt = 'avatar';
+    img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+    el.appendChild(img);
+  } else if(profile && profile.avatar_type === 'illustration' && profile.avatar_illustration){
+    el.style.background = 'transparent';
+    var img2 = document.createElement('img');
+    img2.src = 'assets/avatars/' + profile.avatar_illustration;
+    img2.alt = 'avatar';
+    img2.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;';
+    el.appendChild(img2);
+  } else {
+    el.style.background = 'var(--yellow)';
+    el.textContent = (username || '?').charAt(0).toUpperCase();
+  }
+
+  // decoration renders in its own overlay layer so the badge's own
+  // circular clipping never cuts it off
+  var decoLayer = document.createElement('div');
+  decoLayer.className = 'avatar-deco-layer';
+  var decoId = profile && profile.decoration_equipped;
+  var deco = decoId && window.DECORATIONS ? window.DECORATIONS.find(function(d){ return d.id === decoId; }) : null;
+  if(deco){
+    var decoImg = document.createElement('img');
+    decoImg.src = deco.image;
+    decoImg.alt = deco.name;
+    decoLayer.appendChild(decoImg);
+  }
+  el.appendChild(decoLayer);
+}
+
+function renderStats(profile){
+  const coins = (profile && typeof profile.coins === 'number') ? profile.coins : 0;
+  const hearts = (profile && typeof profile.hearts === 'number') ? profile.hearts : 5;
+  const streak = (profile && typeof profile.current_streak === 'number') ? profile.current_streak : 0;
+  document.getElementById('coinCount').textContent = coins;
+  document.getElementById('heartCount').textContent = hearts;
+  document.getElementById('streakCount').textContent = streak;
+  // dim the heart icon fill when out of hearts, without touching layout/size
+  const heartSvg = document.querySelector('.heart-pill svg');
+  if(heartSvg){
+    heartSvg.classList.toggle('empty-heart', hearts <= 0);
+  }
+}
+
+function lessonIdFromHref(href){ return href ? href.replace('.html','') : null; }
+
+function loadCachedProgress(){
+  try{ return JSON.parse(localStorage.getItem(PROGRESS_CACHE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function cacheProgress(map){
+  try{ localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(map)); } catch(e){}
+}
+
+function renderPath(progressMap){
+  document.querySelectorAll('.node[data-href]').forEach(function(node){
+    const lessonId = lessonIdFromHref(node.dataset.href);
+    if(!lessonId || !LESSON_ORDER.includes(lessonId)) return;
+
+    const idx = LESSON_ORDER.indexOf(lessonId);
+    const prevId = idx > 0 ? LESSON_ORDER[idx-1] : null;
+    const prevDone = idx === 0 ? true : !!(progressMap[prevId] && progressMap[prevId].completed);
+    const entry = progressMap[lessonId];
+
+    const wrap = node.closest('.node-wrap');
+    const row = wrap.closest('.row');
+    node.classList.remove('locked','current','done');
+    wrap.classList.remove('start-wrap');
+    if(row) row.classList.remove('row-start');
+    const oldPill = wrap.querySelector('.start-pill');
+    if(oldPill) oldPill.remove();
+
+    if(entry && entry.completed){
+      node.classList.add('done');
+    } else if(prevDone){
+      node.classList.add('current');
+      wrap.classList.add('start-wrap');
+      if(row) row.classList.add('row-start');
+      const pill = document.createElement('div');
+      pill.className = 'start-pill';
+      pill.textContent = (entry && entry.current_round > 0) ? 'Continue' : 'Start';
+      wrap.insertBefore(pill, wrap.firstChild);
+    } else {
+      node.classList.add('locked');
+    }
+  });
+}
+
+const PROFILE_CACHE_KEY = 'sketchquest_profile_cache';
+function loadCachedProfile(){
+  try{ return JSON.parse(localStorage.getItem(PROFILE_CACHE_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function cacheProfile(p){
+  try{ localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(p)); }catch(e){}
+}
+
+// NEW
+(async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+  const username = session.user.user_metadata?.username || session.user.user_metadata?.display_name || "Artist";
+  document.getElementById('userName').textContent = username;
+
+  // paint instantly from cache — no flash of the plain letter avatar while we fetch
+  renderAvatarInto(document.getElementById('userAvatar'), loadCachedProfile(), username);
+  renderPath(loadCachedProgress());
+  renderStats(loadCachedProfile());
+  const [{ data: profileRow }, { data: rows, error }] = await Promise.all([
+    supabaseClient
+      .from('profiles')
+     .select('avatar_type, avatar_illustration, avatar_url, coins, hearts, current_streak, decoration_equipped')
+      .eq('id', session.user.id)
+      .single(),
+    supabaseClient
+      .from('lesson_progress')
+      .select('lesson_id, completed, xp, coins, current_round')
+      .eq('user_id', session.user.id)
+  ]);
+
+if(profileRow){
+    cacheProfile(profileRow);
+    renderAvatarInto(document.getElementById('userAvatar'), profileRow, username);
+    renderStats(profileRow);
+  }
+ if(!error && rows){
+    const map = {};
+    rows.forEach(function(r){ map[r.lesson_id] = r; });
+    cacheProgress(map);
+    renderPath(map);
+  }
+
+  // home has fully loaded — dismiss the redirect overlay, if it was shown
+  if (sessionStorage.getItem('zippo_show_home_loading') === '1') {
+    sessionStorage.removeItem('zippo_show_home_loading');
+    const overlay = document.getElementById('redirectOverlay');
+    if (overlay) {
+      overlay.classList.add('is-hidden');
+      setTimeout(function(){ overlay.style.display = 'none'; }, 400);
+    }
+  }
+})();
+
+function closeAllPopups(){
+  document.querySelectorAll('.lesson-popup').forEach(function(p){ p.remove(); });
+  document.querySelectorAll('.node-wrap.popup-open').forEach(function(w){ w.classList.remove('popup-open'); });
+  document.querySelectorAll('.row.popup-active').forEach(function(r){ r.classList.remove('popup-active'); });
+}
+document.querySelectorAll('.path').forEach(function(pathEl){
+  pathEl.addEventListener('click', function(e){
+    // clicking the button inside an open popup is the only thing that navigates
+    var startBtn = e.target.closest('.popup-start');
+    if(startBtn){
+      e.stopPropagation();
+      if(!startBtn.disabled && startBtn.dataset.href){
+        window.location.href = startBtn.dataset.href;
+      }
+      return;
+    }
+
+    var node = e.target.closest('.node');
+    if(!node) return;
+    e.stopPropagation();
+
+    var wrap = node.parentElement;
+    var alreadyOpen = wrap.querySelector('.lesson-popup');
+    closeAllPopups();
+    if(alreadyOpen) return; // second tap on the same node just closes it
+
+    wrap.classList.add('popup-open');
+    var row = wrap.closest('.row');
+    if(row){ row.classList.add('popup-active'); }
+
+    var isLocked = node.classList.contains('locked');
+    var isDone = node.classList.contains('done');
+    var btnLabel = isLocked ? 'Locked' : (isDone ? 'Review' : 'Start');
+    var btnIcon = isLocked
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"></path></svg>';
+    // a completed lesson opened via "Review" gets ?review=1 so the lesson
+    // page knows to let the user replay it without re-triggering rewards,
+    // heart loss, or the completion redirect
+    var btnHref = node.dataset.href
+      ? node.dataset.href + (isDone ? '?review=1' : '')
+      : '';
+
+    var popup = document.createElement('div');
+    popup.className = 'lesson-popup';
+    popup.innerHTML =
+      '<div class="popup-arrow"></div>' +
+      '<p class="popup-title">' + (node.dataset.title || 'Lesson') + '</p>' +
+      '<p class="popup-sub">' + (node.dataset.sub || '') + '</p>' +
+      '<button type="button" class="popup-start"' +
+        (isLocked ? ' disabled' : '') +
+        (btnHref ? ' data-href="' + btnHref + '"' : '') +
+        '>' + btnIcon + ' ' + btnLabel + '</button>';
+    wrap.appendChild(popup);
+    /* locked lessons stay preview-only: the button is disabled and carries
+       no href, so it can never jump ahead to a lesson not yet unlocked */
+  });
+});
+document.addEventListener('click', closeAllPopups);
+
+/* ---- pause infinite decorative animations while off-screen ----
+   Chrome keeps every element with an infinite CSS animation on its own
+   GPU-composited layer permanently, even while scrolled out of view.
+   On browser zoom, all live layers have to be re-rasterized at once,
+   which is what causes the temporary disappear + lag you're seeing.
+   Only letting the animation run while the element is actually visible
+   keeps the number of concurrently-animating layers near zero most of
+   the time, so there's nothing expensive to redo when the zoom level
+   changes. */
+const animObserver = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    entry.target.classList.toggle('in-view', entry.isIntersecting);
+  });
+}, { rootMargin: '100px 0px' }); // small buffer so it starts just before it's on screen
+
+function watchDecorativeAnimations(){
+  document.querySelectorAll('.node.current, .node.chest, .start-pill').forEach(function(el){
+    animObserver.observe(el);
+  });
+}
+
+watchDecorativeAnimations();
+
+
+
+
+</script>
+</body>
+</html>
